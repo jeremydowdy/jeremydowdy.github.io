@@ -339,7 +339,7 @@
         </div>
     </div>
 
-            <script>
+               <script>
         function toggleChat() {
             const chatContainer = document.getElementById('chatContainer');
             chatContainer.classList.toggle('closed');
@@ -366,10 +366,18 @@
             input.value = '';
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-            // 2. Add "Typing..." delay for realism
+            // 2. Show "Typing..." Indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai-message typing-indicator';
+            typingDiv.innerHTML = '<span></span><span></span><span></span>';
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            // 3. Wait 1.5 seconds, remove typing indicator, and print response
             setTimeout(() => {
+                messagesContainer.removeChild(typingDiv);
                 generateBotResponse(messageText, messagesContainer);
-            }, 600);
+            }, 1500);
         }
 
         function generateBotResponse(userText, container) {
