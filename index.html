@@ -93,6 +93,24 @@
             color: #ffffff;
         }
 
+        ul {
+            list-style-type: disc; 
+            color: #ffffff; 
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 12px;
+            color: #f4f4f4; 
+            font-weight: 300;
+        }
+
+        strong {
+            font-weight: 600;
+            color: #ffffff; 
+            letter-spacing: 0.5px;
+        }
+
         /* Tech Stack Footer */
         .tech-stack-footer {
             text-align: center;
@@ -239,6 +257,34 @@
         <p>I am an Information Technology professional and a United States Marine Corps Veteran. My foundation was built in some of the most high-pressure, zero-fail environments on earth. I am trained to operate smoothly, decisively, and effectively when the stakes are at their highest—and I bring that exact same rigorous discipline, leadership, and strategic execution into the tech space.</p>
     </section>
 
+    <section id="projects">
+        <h2>Projects & Current Work</h2>
+        <p>I am currently actively building out my portfolio. As I complete my MS in Product Management at WGU, I am developing hands-on technical projects to showcase my skills in IT and product strategy.</p>
+        <p><strong>Currently in the pipeline:</strong></p>
+        <ul>
+            <li>Building custom web applications</li>
+            <li>Developing interactive product roadmaps</li>
+            <li>Creating technical IT documentation and architecture diagrams</li>
+        </ul>
+        <p><em>Check back soon for live links and case studies!</em></p>
+    </section>
+
+    <section id="certificates">
+        <h2>Education, Certifications & Expertise</h2>
+        <h3>Core Expertise</h3>
+        <ul>
+            <li><strong>AI Engineer & Practitioner:</strong> Utilizing artificial intelligence to assist and accelerate the development process.</li>
+            <li><strong>Strategic Focus:</strong> Specializing in complex IT Architecture and driving end-to-end Product Lifecycles.</li>
+        </ul>
+        <h3>Certifications</h3>
+        <ul>
+            <li><strong>AWS Certified Cloud Practitioner</strong> (CCP)</li>
+            <li><strong>CompTIA SecurityX</strong></li>
+            <li><strong>CompTIA Security+</strong></li>
+            <li><strong>ITIL 4 Foundations</strong></li>
+        </ul>
+    </section>
+
     <!-- Footer Logos -->
     <div class="tech-stack-footer">
         <p>POWERED BY</p>
@@ -271,31 +317,24 @@
         function toggleChat() {
             document.getElementById('chatContainer').classList.toggle('closed');
         }
-
         function handleKeyPress(event) {
             if (event.key === 'Enter') sendMessage();
         }
-
         async function sendMessage() {
             const input = document.getElementById('chatInput');
             const messageText = input.value.trim();
             if (!messageText) return;
-
             const messagesContainer = document.getElementById('chatMessages');
-            
             const userDiv = document.createElement('div');
             userDiv.className = 'message user-message';
             userDiv.innerText = messageText;
             messagesContainer.appendChild(userDiv);
             input.value = '';
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
             await generateBotResponse(messageText, messagesContainer);
         }
-
         async function generateBotResponse(userText, container) {
             const WORKER_URL = "https://gemini-portfolio-bridge.jeremydowdy-usa.workers.dev"; 
-
             try {
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
@@ -304,10 +343,8 @@
                         contents: [{ parts: [{ text: "You are an AI assistant for Jeremy Dowdy. Keep answers concise and professional. Respond to this: " + userText }] }]
                     })
                 });
-
                 const json = await response.json();
                 const botReply = json.candidates[0].content.parts[0].text;
-
                 const botDiv = document.createElement('div');
                 botDiv.className = 'message ai-message';
                 botDiv.innerHTML = botReply; 
