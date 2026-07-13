@@ -1,331 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jeremy Dowdy | Portfolio</title>
-    <style>
-        /* Global Styles */
-        body {
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-weight: 300; 
-            margin: 0;
-            padding: 0;
-            background-image: url('Background Image.jpg');
-            background-size: cover; 
-            background-position: center; 
-            background-attachment: fixed; 
-            color: #f4f4f4; 
-            line-height: 1.7;
-        }
-
-        h1, h2, h3 {
-            font-weight: 500; 
-            color: #ffffff; 
-            margin-bottom: 15px;
-        }
-
-        /* The Hero Section */
-        header {
-            text-align: center;
-            padding: 60px 20px 40px; 
-            background: transparent; 
-            border: none;
-            box-shadow: none;
-        }
-
-        header h1 {
-            font-size: 3.2em;
-            margin: 0 0 5px 0;
-            letter-spacing: 1px;
-            color: #ffffff; 
-            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); 
-        }
-
-        header p {
-            color: #e0e0e0; 
-            font-size: 1.2em;
-            margin-top: 0;
-            font-weight: 400;
-            text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.8);
-        }
-
-        header a {
-            display: inline-block;
-            margin-top: 25px;
-            padding: 12px 30px;
-            background-color: rgba(255, 255, 255, 0.15); 
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 500;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 30px; 
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-
-        header a:hover {
-            background-color: rgba(255, 255, 255, 0.3); 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        section {
-            max-width: 800px;
-            margin: 20px auto 40px auto;
-            padding: 45px;
-            background-color: rgba(0, 0, 0, 0.35); 
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); 
-        }
-
-        section h2 {
-            border-bottom: 2px solid rgba(255, 255, 255, 0.5); 
-            display: inline-block;
-            padding-bottom: 5px;
-            margin-bottom: 25px;
-            color: #ffffff;
-        }
-
-        ul {
-            list-style-type: disc; 
-            color: #ffffff; 
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 12px;
-            color: #f4f4f4; 
-            font-weight: 300;
-        }
-
-        strong {
-            font-weight: 600;
-            color: #ffffff; 
-            letter-spacing: 0.5px;
-        }
-
-        /* Footer Section */
-        .tech-stack-footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.8em;
-            margin-top: 20px;
-            font-weight: 400;
-            letter-spacing: 1px;
-        }
-        .footer-tech {
-            margin-top: 10px;
-            color: #ffffff;
-            opacity: 0.8;
-        }
-
-        /* AI Recruiter Assistant UI */
-        .chat-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 350px;
-            height: 450px;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 1000;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .chat-container.closed {
-            height: 50px;
-            width: 260px;
-            cursor: pointer;
-        }
-        .chat-header {
-            background-color: rgba(255, 255, 255, 0.08);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            user-select: none;
-        }
-        .chat-status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #00ff66;
-            border-radius: 50%;
-            margin-right: 10px;
-            box-shadow: 0 0 8px #00ff66;
-        }
-        .chat-header h3 {
-            margin: 0;
-            font-size: 0.95em;
-            font-weight: 500;
-            color: #ffffff;
-            flex-grow: 1;
-        }
-        .chat-toggle-icon {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.8em;
-            transition: transform 0.3s ease;
-        }
-        .chat-container.closed .chat-toggle-icon {
-            transform: rotate(180deg);
-        }
-        .chat-messages {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .message {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-        .ai-message {
-            background-color: #333333;
-            color: #ffffff;
-            align-self: flex-start;
-            border-top-left-radius: 2px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .user-message {
-            background-color: #007aff;
-            color: #ffffff;
-            align-self: flex-end;
-            border-top-right-radius: 2px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        .chat-input-area {
-            padding: 15px;
-            display: flex;
-            gap: 8px;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .chat-input-area input {
-            flex-grow: 1;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 14px;
-            border-radius: 20px;
-            color: #ffffff;
-            font-size: 0.9em;
-            outline: none;
-        }
-        .chat-input-area button {
-            background-color: #ffffff;
-            color: #000000;
-            border: none;
-            padding: 0 16px;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.85em;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-    <header>
-        <h1>Jeremy Dowdy</h1>
-        <p>M.S. Candidate, Western Governors University | Product Management, Information Technology</p>
-        <a href="https://www.linkedin.com/in/jeremydowdy" target="_blank">View My LinkedIn</a>
-    </header>
-
-    <section id="about">
-        <h2>About Me</h2>
-        <p>I am an Information Technology professional and a United States Marine Corps Veteran. My foundation was built in some of the most high-pressure, zero-fail environments on earth. I am trained to operate smoothly, decisively, and effectively when the stakes are at their highest—and I bring that exact same rigorous discipline, leadership, and strategic execution into the tech space.</p>
-    </section>
-
-    <section id="projects">
-        <h2>Projects & Current Work</h2>
-        <p>I am currently actively building out my portfolio. As I complete my MS in Product Management at WGU, I am developing hands-on technical projects to showcase my skills in IT and product strategy.</p>
-        <p><strong>Currently in the pipeline:</strong></p>
-        <ul>
-            <li>Building custom web applications</li>
-            <li>Developing interactive product roadmaps</li>
-            <li>Creating technical IT documentation and architecture diagrams</li>
-        </ul>
-        <p><em>Check back soon for live links and case studies!</em></p>
-    </section>
-
-    <section id="certificates">
-        <h2>Education, Certifications & Expertise</h2>
-        <h3>Core Expertise</h3>
-        <ul>
-            <li><strong>AI Engineer & Practitioner:</strong> Utilizing artificial intelligence to assist and accelerate the development process.</li>
-            <li><strong>Strategic Focus:</strong> Specializing in complex IT Architecture and driving end-to-end Product Lifecycles.</li>
-        </ul>
-        <h3>Certifications</h3>
-        <ul>
-            <li><strong>AWS Certified Cloud Practitioner</strong> (CCP)</li>
-            <li><strong>CompTIA SecurityX</strong></li>
-            <li><strong>CompTIA Security+</strong></li>
-            <li><strong>ITIL 4 Foundations</strong></li>
-        </ul>
-    </section>
-
-    <!-- Footer -->
-    <div class="tech-stack-footer">
-        POWERED BY
-        <div class="footer-tech">
-            Google Cloud &bull; Gemini AI &bull; Cloudflare
-        </div>
-    </div>
-
-    <!-- Chat UI -->
-    <div class="chat-container closed" id="chatContainer">
-        <div class="chat-header" onclick="toggleChat()">
-            <div class="chat-status-dot"></div>
-            <h3>Jeremy's AI Assistant</h3>
-            <span class="chat-toggle-icon" id="chatToggleIcon">▲</span>
-        </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="message ai-message">
-                Hi, I'm Jeremy's AI Wingman. Ask me about his military background, IT architecture expertise, or Product Management philosophy.
-            </div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Ask a question..." onkeypress="handleKeyPress(event)">
-            <button onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-
     <script>
         function toggleChat() {
             document.getElementById('chatContainer').classList.toggle('closed');
         }
+
         function handleKeyPress(event) {
             if (event.key === 'Enter') sendMessage();
         }
+
         async function sendMessage() {
             const input = document.getElementById('chatInput');
             const messageText = input.value.trim();
             if (!messageText) return;
+
             const messagesContainer = document.getElementById('chatMessages');
+            
             const userDiv = document.createElement('div');
             userDiv.className = 'message user-message';
             userDiv.innerText = messageText;
             messagesContainer.appendChild(userDiv);
+            
             input.value = '';
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
             await generateBotResponse(messageText, messagesContainer);
         }
-                async function generateBotResponse(userText, container) {
+
+        async function generateBotResponse(userText, container) {
             const WORKER_URL = "https://gemini-portfolio-bridge.jeremydowdy-usa.workers.dev"; 
 
             try {
@@ -339,9 +39,6 @@
 
                 const json = await response.json();
                 
-                // --- DEBUGGING LINE ---
-                console.log("Full Response from Google:", json); 
-
                 if (json.candidates && json.candidates.length > 0) {
                     const botReply = json.candidates[0].content.parts[0].text;
                     const botDiv = document.createElement('div');
@@ -351,7 +48,7 @@
                 } else {
                     const errorDiv = document.createElement('div');
                     errorDiv.className = 'message ai-message';
-                    errorDiv.innerText = "Error: " + JSON.stringify(json); // This will show the real error
+                    errorDiv.innerText = "Error: " + JSON.stringify(json);
                     container.appendChild(errorDiv);
                 }
             } catch (error) {
@@ -362,8 +59,4 @@
             }
             container.scrollTop = container.scrollHeight;
         }
-            container.scrollTop = container.scrollHeight;
-        }
     </script>
-</body>
-</html>
