@@ -341,10 +341,11 @@
                 botDiv.className = 'message ai-message';
                 botDiv.innerHTML = botReply; 
                 container.appendChild(botDiv);
-            } catch (error) {
+                        } catch (error) {
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'message ai-message';
-                errorDiv.innerText = "I'm having trouble connecting to the network. Please try again in a moment.";
+                // This will show us exactly why it is failing
+                errorDiv.innerText = "Error: " + error.message; 
                 container.appendChild(errorDiv);
             }
             container.scrollTop = container.scrollHeight;
