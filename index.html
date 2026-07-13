@@ -325,8 +325,9 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             await generateBotResponse(messageText, messagesContainer);
         }
-        async function generateBotResponse(userText, container) {
+                async function generateBotResponse(userText, container) {
             const WORKER_URL = "https://gemini-portfolio-bridge.jeremydowdy-usa.workers.dev"; 
+
             try {
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
@@ -335,19 +336,32 @@
                         contents: [{ parts: [{ text: "You are an AI assistant for Jeremy Dowdy. Keep answers concise and professional. Respond to this: " + userText }] }]
                     })
                 });
+
                 const json = await response.json();
-                const botReply = json.candidates[0].content.parts[0].text;
-                const botDiv = document.createElement('div');
-                botDiv.className = 'message ai-message';
-                botDiv.innerHTML = botReply; 
-                container.appendChild(botDiv);
-                        } catch (error) {
+                
+                // --- DEBUGGING LINE ---
+                console.log("Full Response from Google:", json); 
+
+                if (json.candidates && json.candidates.length > 0) {
+                    const botReply = json.candidates[0].content.parts[0].text;
+                    const botDiv = document.createElement('div');
+                    botDiv.className = 'message ai-message';
+                    botDiv.innerHTML = botReply; 
+                    container.appendChild(botDiv);
+                } else {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'message ai-message';
+                    errorDiv.innerText = "Error: " + JSON.stringify(json); // This will show the real error
+                    container.appendChild(errorDiv);
+                }
+            } catch (error) {
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'message ai-message';
-                // This will show us exactly why it is failing
-                errorDiv.innerText = "Error: " + error.message; 
+                errorDiv.innerText = "Network Error: " + error.message;
                 container.appendChild(errorDiv);
             }
+            container.scrollTop = container.scrollHeight;
+        }
             container.scrollTop = container.scrollHeight;
         }
     </script>
