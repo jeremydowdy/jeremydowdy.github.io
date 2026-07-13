@@ -93,25 +93,27 @@
             color: #ffffff;
         }
 
-        ul {
-            list-style-type: disc; 
-            color: #ffffff; 
-            padding-left: 20px;
+        /* Tech Stack Footer */
+        .tech-stack-footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75em;
+            margin-top: 20px;
+        }
+        .logo-row {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 15px;
+            filter: grayscale(100%) brightness(150%);
+            opacity: 0.7;
+        }
+        .logo-row img {
+            height: 20px;
         }
 
-        li {
-            margin-bottom: 12px;
-            color: #f4f4f4; 
-            font-weight: 300;
-        }
-
-        strong {
-            font-weight: 600;
-            color: #ffffff; 
-            letter-spacing: 0.5px;
-        }
-
-        /* AI Recruiter Assistant - Liquid Dark Glass Interface */
+        /* AI Recruiter Assistant UI */
         .chat-container {
             position: fixed;
             bottom: 30px;
@@ -237,6 +239,16 @@
         <p>I am an Information Technology professional and a United States Marine Corps Veteran. My foundation was built in some of the most high-pressure, zero-fail environments on earth. I am trained to operate smoothly, decisively, and effectively when the stakes are at their highest—and I bring that exact same rigorous discipline, leadership, and strategic execution into the tech space.</p>
     </section>
 
+    <!-- Footer Logos -->
+    <div class="tech-stack-footer">
+        <p>POWERED BY</p>
+        <div class="logo-row">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Google_Cloud_logo_2015.svg" alt="Google Cloud">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Google_Gemini_logo.svg" alt="Google Gemini">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Cloudflare_Logo.png" alt="Cloudflare">
+        </div>
+    </div>
+
     <!-- Chat UI -->
     <div class="chat-container closed" id="chatContainer">
         <div class="chat-header" onclick="toggleChat()">
@@ -271,7 +283,6 @@
 
             const messagesContainer = document.getElementById('chatMessages');
             
-            // Print User Message
             const userDiv = document.createElement('div');
             userDiv.className = 'message user-message';
             userDiv.innerText = messageText;
@@ -279,12 +290,10 @@
             input.value = '';
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-            // Generate AI Response
             await generateBotResponse(messageText, messagesContainer);
         }
 
         async function generateBotResponse(userText, container) {
-            // Your Cloudflare Worker URL
             const WORKER_URL = "https://gemini-portfolio-bridge.jeremydowdy-usa.workers.dev"; 
 
             try {
