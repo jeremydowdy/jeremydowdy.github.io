@@ -111,9 +111,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* ==========================================================================
-           AI Recruiter Assistant - Liquid Dark Glass Interface
-           ========================================================================== */
+        /* AI Recruiter Assistant - Liquid Dark Glass Interface */
         .chat-container {
             position: fixed;
             bottom: 30px;
@@ -184,14 +182,14 @@
             line-height: 1.4;
         }
         .ai-message {
-            background-color: #333333; /* Solid dark gray */
+            background-color: #333333;
             color: #ffffff;
             align-self: flex-start;
             border-top-left-radius: 2px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         .user-message {
-            background-color: #007aff; /* Bright Apple iMessage Blue */
+            background-color: #007aff;
             color: #ffffff;
             align-self: flex-end;
             border-top-right-radius: 2px;
@@ -224,30 +222,6 @@
             font-size: 0.85em;
             cursor: pointer;
         }
-        /* Typing Indicator Animation */
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 12px 16px;
-            height: 20px;
-            width: fit-content;
-        }
-        .typing-indicator span {
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            background-color: #ffffff;
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out both;
-        }
-        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); opacity: 0.3; }
-            40% { transform: scale(1); opacity: 1; }
-        }
     </style>
 </head>
 <body>
@@ -255,73 +229,26 @@
     <header>
         <h1>Jeremy Dowdy</h1>
         <p>M.S. Candidate, Western Governors University | Product Management, Information Technology</p>
-        <a href="https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.linkedin.com/in/jeremydowdy&ved=2ahUKEwj2jqDJ9c-VAxUT4MkDHXZUMBwQFnoECDEQAQ&usg=AOvVaw0iEn76YjvZ5e19XxXvihXX" target="_blank">View My LinkedIn</a>
+        <a href="https://www.linkedin.com/in/jeremydowdy" target="_blank">View My LinkedIn</a>
     </header>
 
     <section id="about">
         <h2>About Me</h2>
         <p>I am an Information Technology professional and a United States Marine Corps Veteran. My foundation was built in some of the most high-pressure, zero-fail environments on earth. I am trained to operate smoothly, decisively, and effectively when the stakes are at their highest—and I bring that exact same rigorous discipline, leadership, and strategic execution into the tech space.</p>
-        
-        <p>Currently pursuing my MS in Product Management as a Master's Candidate at Western Governors University (WGU), my passion lies in driving technical solutions from concept to launch. Whether I am navigating complex IT architecture or mapping out end-to-end product lifecycles, I build products that solve real-world problems and deliver measurable results.</p>
-        
-        <p>That drive for continuous improvement doesn't stop when I log off. I am an avid golfer and offshore fisherman, always seeking the next challenge. When I am not at my computer, on the course, or out on the boat, you can find me in my garage gym. I am a massive advocate for kettlebell training and its unmatched ability to forge raw strength, flexibility, and total body transformation.</p>
     </section>
 
-    <section id="projects">
-        <h2>Projects & Current Work</h2>
-        <p>I am currently actively building out my portfolio. As I complete my MS in Product Management at WGU, I am developing hands-on technical projects to showcase my skills in IT and product strategy.</p>
-        <p><strong>Currently in the pipeline:</strong></p>
-        <ul>
-            <li>Building custom web applications</li>
-            <li>Developing interactive product roadmaps</li>
-            <li>Creating technical IT documentation and architecture diagrams</li>
-        </ul>
-        <p><em>Check back soon for live links and case studies!</em></p>
-    </section>
-
-    <section id="certificates">
-        <h2>Education, Certifications & Expertise</h2>
-        
-        <h3>Core Expertise</h3>
-        <ul>
-            <li><strong>AI Engineer & Practitioner:</strong> Utilizing artificial intelligence to assist and accelerate the development process, maintaining strict human oversight and architectural control over the final product.</li>
-            <li><strong>Strategic Focus:</strong> Specializing in complex IT Architecture and driving end-to-end Product Lifecycles.</li>
-        </ul>
-
-        <h3>Certifications</h3>
-        <ul>
-            <li><strong>AWS Certified Cloud Practitioner</strong> (CCP)</li>
-            <li><strong>CompTIA SecurityX</strong> (Formerly CASP+)</li>
-            <li><strong>CompTIA Security+</strong></li>
-            <li><strong>ITIL 4 Foundations</strong></li>
-            <li><em>*Full credential verifications are available on my LinkedIn profile.</em></li>
-        </ul>
-
-        <h3>Education & Training</h3>
-        <ul>
-            <li><strong>Penetration Testing Bootcamp Graduate</strong> - Divergence Academy (Texas)</li>
-            <li><strong>Associate Degree</strong> - Chattahoochee Valley Community College</li>
-            <li><strong>Currently Enrolled - Accelerated BS to MS</strong> - Western Govenors University</li>
-        </ul>
-    </section>
-
-    <!-- AI Recruiter Assistant UI -->
+    <!-- Chat UI -->
     <div class="chat-container closed" id="chatContainer">
-        <!-- Chat Header -->
         <div class="chat-header" onclick="toggleChat()">
             <div class="chat-status-dot"></div>
             <h3>Jeremy's AI Assistant</h3>
             <span class="chat-toggle-icon" id="chatToggleIcon">▲</span>
         </div>
-        
-        <!-- Chat Messages Area -->
         <div class="chat-messages" id="chatMessages">
             <div class="message ai-message">
-                Hi, I'm Jeremy's AI Wingman. Ask me anything about his military background, IT architecture expertise, or Product Management philosophy.
+                Hi, I'm Jeremy's AI Wingman. Ask me about his military background, IT architecture expertise, or Product Management philosophy.
             </div>
         </div>
-        
-        <!-- Chat Input Area -->
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="Ask a question..." onkeypress="handleKeyPress(event)">
             <button onclick="sendMessage()">Send</button>
@@ -330,78 +257,58 @@
 
     <script>
         function toggleChat() {
-            const chatContainer = document.getElementById('chatContainer');
-            chatContainer.classList.toggle('closed');
+            document.getElementById('chatContainer').classList.toggle('closed');
         }
 
         function handleKeyPress(event) {
-            if (event.key === 'Enter') { sendMessage(); }
+            if (event.key === 'Enter') sendMessage();
         }
 
-        function sendMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chatInput');
             const messageText = input.value.trim();
             if (!messageText) return;
 
             const messagesContainer = document.getElementById('chatMessages');
             
-            // 1. Print User Message
+            // Print User Message
             const userDiv = document.createElement('div');
             userDiv.className = 'message user-message';
             userDiv.innerText = messageText;
             messagesContainer.appendChild(userDiv);
-
-            // Clear input and scroll
             input.value = '';
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
-            // 2. Show "Typing..." Indicator
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message ai-message typing-indicator';
-            typingDiv.innerHTML = '<span></span><span></span><span></span>';
-            messagesContainer.appendChild(typingDiv);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-
-            // 3. Wait 1.5 seconds, remove typing indicator, and print response
-            setTimeout(() => {
-                messagesContainer.removeChild(typingDiv);
-                generateBotResponse(messageText, messagesContainer);
-            }, 1500);
+            // Generate AI Response
+            await generateBotResponse(messageText, messagesContainer);
         }
 
-        function generateBotResponse(userText, container) {
-            const lowerText = userText.toLowerCase();
-            let replyText = "";
+        async function generateBotResponse(userText, container) {
+            // Your Cloudflare Worker URL
+            const WORKER_URL = "https://gemini-portfolio-bridge.jeremydowdy-usa.workers.dev"; 
 
-            // --- THE LOGIC MATRIX ---
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "You are an AI assistant for Jeremy Dowdy. Keep answers concise and professional. Respond to this: " + userText }] }]
+                    })
+                });
 
-            if (lowerText.includes("military") || lowerText.includes("marine") || lowerText.includes("usmc")) {
-                replyText = "Jeremy is a United States Marine Corps Veteran. He brings the rigorous discipline, rapid decision-making, and high-pressure execution learned from being an H-1 Crew Chief (MOS 6174) directly into his IT and Product Management methodologies.";
-            } 
-            else if (lowerText.includes("skills") || lowerText.includes("tech") || lowerText.includes("certifications") || lowerText.includes("architecture")) {
-                replyText = "Jeremy specializes in IT Architecture and Product Management. He is an AWS Certified Cloud Practitioner, holds CompTIA SecurityX (CASP+) and Security+, and is a Penetration Testing Bootcamp graduate.";
-            }
-            else if (lowerText.includes("education") || lowerText.includes("degree") || lowerText.includes("wgu")) {
-                replyText = "He is currently an MS Candidate in Product Management, Information Technology at Western Governors University (WGU), aggressively bridging the gap between technical infrastructure and end-to-end product lifecycles.";
-            }
-            else if (lowerText.includes("philosophy") || lowerText.includes("product") || lowerText.includes("management")) {
-                replyText = "Jeremy's Product Management philosophy is built on extreme ownership and strategic execution. He believes in bridging the gap between secure, scalable IT architecture and seamless user experiences, ensuring zero-fail delivery.";
-            }
-            else if (lowerText.includes("contact") || lowerText.includes("email") || lowerText.includes("hire") || lowerText.includes("reach")) {
-                replyText = "The fastest way to reach Jeremy for roles in Product Management or IT Architecture is directly via email.<br><br><a href='mailto:jeremydowdy.usa@gmail.com?subject=Reaching out from your Portfolio' style='display:inline-block; padding:8px 16px; background:#00ff66; color:#000; border-radius:20px; text-decoration:none; font-weight:600; font-size:0.9em; box-shadow: 0 4px 10px rgba(0,255,102,0.3);'>Email Jeremy Directly</a>";
-            }
-            else {
-                // The default fallback response
-                replyText = "I'm focused on getting Jeremy hired! Ask me about his <strong>skills</strong>, his <strong>military</strong> background, his <strong>philosophy</strong>, or how to <strong>contact</strong> him.";
-            }
+                const json = await response.json();
+                const botReply = json.candidates[0].content.parts[0].text;
 
-            // 3. Print Bot Message
-            const botDiv = document.createElement('div');
-            botDiv.className = 'message ai-message';
-            botDiv.innerHTML = replyText; 
-            container.appendChild(botDiv);
-            
-            // Scroll to bottom
+                const botDiv = document.createElement('div');
+                botDiv.className = 'message ai-message';
+                botDiv.innerHTML = botReply; 
+                container.appendChild(botDiv);
+            } catch (error) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message ai-message';
+                errorDiv.innerText = "I'm having trouble connecting to the network. Please try again in a moment.";
+                container.appendChild(errorDiv);
+            }
             container.scrollTop = container.scrollHeight;
         }
     </script>
