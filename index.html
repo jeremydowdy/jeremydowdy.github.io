@@ -344,7 +344,7 @@
         </div>
     </div>
 
-    <script>
+        <script>
         function toggleChat() {
             const container = document.getElementById('chatContainer');
             const headerBtn = document.querySelector('.chat-header');
@@ -378,7 +378,7 @@
             await generateBotResponse(messageText, messagesContainer);
         }
 
-                async function generateBotResponse(userText, container) {
+        async function generateBotResponse(userText, container) {
             const WORKER_URL = "https://gemini-portfolio-bridge.jeremydowdy-usa.workers.dev"; 
             
             // Add a temporary loading message
@@ -398,7 +398,7 @@
                     })
                 });
                 
-                // NEW DEBUGGING: Check if the response from the Worker is an error (e.g., 403 or 500)
+                // Check if the response from the Worker is an error (e.g., 403 or 500)
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`HTTP ${response.status}: ${errorText}`);
@@ -407,9 +407,10 @@
                 const json = await response.json();
                 
                 // Remove loading message
-                document.getElementById('loadingMessage').remove();
+                const currentLoader = document.getElementById('loadingMessage');
+                if (currentLoader) currentLoader.remove();
 
-                // NEW DEBUGGING: Check if the Gemini API returned an error inside the JSON
+                // Check if the Gemini API returned an error inside the JSON
                 if (!json.candidates || !json.candidates[0]) {
                     throw new Error("API responded but format was unexpected: " + JSON.stringify(json));
                 }
@@ -423,7 +424,7 @@
             } catch (error) {
                 // Remove loading message
                 const loader = document.getElementById('loadingMessage');
-                if(loader) loader.remove();
+                if (loader) loader.remove();
 
                 // Log the full error to your browser's developer console
                 console.error("Bot Debug Error:", error);
@@ -433,12 +434,10 @@
                 
                 // Print the exact error message directly into the chat UI
                 errorDiv.innerText = `Debug Error: ${error.message}`;
-                errorDiv.style.backgroundColor = "#5a1a1a"; // Make the error box dark red so you know it's a debug message
+                errorDiv.style.backgroundColor = "#5a1a1a"; // Dark red background for errors
                 
                 container.appendChild(errorDiv);
             }
-            container.scrollTop = container.scrollHeight;
-        }
             container.scrollTop = container.scrollHeight;
         }
     </script>
