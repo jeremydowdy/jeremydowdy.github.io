@@ -378,10 +378,10 @@
             await generateBotResponse(messageText, messagesContainer);
         }
 
-        async function generateBotResponse(userText, container) {
+                async function generateBotResponse(userText, container) {
             const WORKER_URL = "https://gemini-portfolio-bridge.jeremydowdy-usa.workers.dev"; 
             
-            // Add a temporary loading message (Optional, but good UX)
+            // Add a temporary loading message
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message ai-message';
             loadingDiv.innerText = "...";
@@ -393,17 +393,26 @@
                 const response = await fetch(WORKER_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    // SECURITY FIX: Only send the user's text from the frontend.
-                    // The "You are an AI assistant..." prompt MUST be appended securely inside your Cloudflare Worker.
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: userText }] }]
                     })
                 });
                 
+                // NEW DEBUGGING: Check if the response from the Worker is an error (e.g., 403 or 500)
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
                 const json = await response.json();
                 
                 // Remove loading message
                 document.getElementById('loadingMessage').remove();
+
+                // NEW DEBUGGING: Check if the Gemini API returned an error inside the JSON
+                if (!json.candidates || !json.candidates[0]) {
+                    throw new Error("API responded but format was unexpected: " + JSON.stringify(json));
+                }
 
                 const botReply = json.candidates[0].content.parts[0].text;
                 const botDiv = document.createElement('div');
@@ -416,11 +425,20 @@
                 const loader = document.getElementById('loadingMessage');
                 if(loader) loader.remove();
 
+                // Log the full error to your browser's developer console
+                console.error("Bot Debug Error:", error);
+
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'message ai-message';
-                errorDiv.innerText = "I'm having trouble connecting to the network. Please try again in a moment.";
+                
+                // Print the exact error message directly into the chat UI
+                errorDiv.innerText = `Debug Error: ${error.message}`;
+                errorDiv.style.backgroundColor = "#5a1a1a"; // Make the error box dark red so you know it's a debug message
+                
                 container.appendChild(errorDiv);
             }
+            container.scrollTop = container.scrollHeight;
+        }
             container.scrollTop = container.scrollHeight;
         }
     </script>
