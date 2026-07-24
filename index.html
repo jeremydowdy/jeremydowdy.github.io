@@ -108,6 +108,22 @@
             letter-spacing: 0.5px;
         }
 
+        /* Document Links */
+        .doc-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #00ff66;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95em;
+            transition: all 0.2s ease;
+        }
+
+        .doc-link:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
         /* Footer Section */
         footer {
             text-align: center;
@@ -296,7 +312,10 @@
             <ul>
                 <li>Building custom web applications</li>
                 <li>Developing interactive product roadmaps</li>
-                <li>Creating technical IT documentation and architecture diagrams</li>
+                <li>Creating technical IT documentation and architecture diagrams
+                    <br>
+                    <a href="Portfolio_AI_Build_Manual.pdf" target="_blank" class="doc-link">📄 View Technical Build Manual (PDF)</a>
+                </li>
             </ul>
             <p><em>Check back soon for live links and case studies!</em></p>
         </section>
@@ -344,7 +363,7 @@
         </div>
     </div>
 
-        <script>
+    <script>
         function toggleChat() {
             const container = document.getElementById('chatContainer');
             const headerBtn = document.querySelector('.chat-header');
