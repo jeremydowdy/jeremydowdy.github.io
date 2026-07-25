@@ -422,24 +422,16 @@
         // ---------------------------------------------------------------
         const chatbotRules = [
             {
-                keywords: ["hi", "hello", "hey", "howdy", "greetings"],
-                response: "Hey! Thanks for stopping by. Feel free to ask me about Jeremy's military background, his IT and product management experience, or the projects he's currently working on."
-            },
-            {
-                keywords: ["who is jeremy", "about jeremy", "tell me about", "about you", "who are you", "background"],
-                response: "Jeremy is an IT professional and a United States Marine Corps veteran. His foundation was built in high-pressure, zero-fail environments, and he brings that same discipline, leadership, and strategic execution into tech."
-            },
-            {
                 keywords: ["marine", "military", "usmc", "veteran", "armed forces", "marine corps", "crew chief", "uh-1", "huey", "cobra", "natops", "mos"],
                 response: "Jeremy served as a 6174 UH-1 crew chief in the U.S. Marine Corps — one of the most selective and difficult-to-earn Military Occupational Specialties in the Corps. At any given time, only around 200 Marines out of roughly 200,000 hold that MOS. Just being selected to attempt crew chief training requires clearing rigorous medical evaluations, demanding physical fitness standards, and real academic requirements — most candidates don't make it through. Training took 18 months to earn his wings, with constant testing on the NATOPS manual, the aircraft's core technical and operational reference. Only the top of the class go on to fly attack platforms like the Huey and Cobra; everyone else is assigned to cargo aircraft. It's a demanding path by design — the Marine Corps' mission runs through the Marines on the front lines, and this MOS exists to support exactly that."
             },
             {
-                keywords: ["education", "school", "degree", "wgu", "western governors", "masters", "m.s.", "studying"],
-                response: "Jeremy is currently an M.S. candidate at Western Governors University, focused on Product Management and Information Technology."
-            },
-            {
                 keywords: ["product management", "product manager", "pm", "product strategy", "product lifecycle", "philosophy", "approach"],
                 response: "Jeremy's product management philosophy centers on pairing deep IT architecture knowledge with disciplined, end-to-end ownership of the product lifecycle — approaching every decision with the same zero-fail rigor he learned in the Marine Corps, and using AI tools to accelerate execution along the way."
+            },
+            {
+                keywords: ["education", "school", "degree", "wgu", "western governors", "masters", "m.s.", "studying"],
+                response: "Jeremy is currently an M.S. candidate at Western Governors University, focused on Product Management and Information Technology."
             },
             {
                 keywords: ["information technology", "it background", "tech skills", "technical background", "architecture"],
@@ -500,6 +492,14 @@
             {
                 keywords: ["thanks", "thank you", "bye", "goodbye", "appreciate"],
                 response: "You're welcome! Feel free to come back anytime if you've got more questions about Jeremy's background."
+            },
+            {
+                keywords: ["who is jeremy", "about jeremy", "tell me about", "about you", "who are you", "background"],
+                response: "Jeremy is an IT professional and a United States Marine Corps veteran. His foundation was built in high-pressure, zero-fail environments, and he brings that same discipline, leadership, and strategic execution into tech."
+            },
+            {
+                keywords: ["hi", "hello", "hey", "howdy", "greetings"],
+                response: "Hey! Thanks for stopping by. Feel free to ask me about Jeremy's military background, his IT and product management experience, or the projects he's currently working on."
             }
         ];
 
