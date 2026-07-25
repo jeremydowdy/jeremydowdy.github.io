@@ -11,7 +11,7 @@
             font-weight: 300; 
             margin: 0;
             padding: 0;
-            background-color: #121212; /* Fallback for accessibility/loading */
+            background-color: #121212;
             background-image: url('Background Image.jpg');
             background-size: cover; 
             background-position: center; 
@@ -26,7 +26,6 @@
             margin-bottom: 15px;
         }
 
-        /* The Hero Section */
         header {
             text-align: center;
             padding: 60px 20px 40px; 
@@ -108,7 +107,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Document Links */
         .doc-link {
             display: inline-block;
             margin-top: 8px;
@@ -124,7 +122,6 @@
             text-decoration: underline;
         }
 
-        /* Footer Section */
         footer {
             text-align: center;
             padding: 40px 20px;
@@ -141,7 +138,31 @@
             opacity: 0.8;
         }
 
-        /* AI Recruiter Assistant UI */
+        .ai-credit-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 18px;
+            padding: 8px 18px;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: rgba(255, 255, 255, 0.75);
+            text-decoration: none;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+
+        .ai-credit-badge:hover {
+            background-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+
+        .ai-credit-icon {
+            font-size: 1em;
+        }
+
         .chat-container {
             position: fixed;
             bottom: 30px;
@@ -166,7 +187,6 @@
             width: 260px;
         }
         
-        /* Converted to button for accessibility */
         .chat-header {
             width: 100%;
             background-color: rgba(255, 255, 255, 0.08);
@@ -266,7 +286,6 @@
             transition: border-color 0.2s ease;
         }
 
-        /* Added focus state for accessibility */
         .chat-input-area input:focus {
             border-color: rgba(255, 255, 255, 0.6);
             box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
@@ -288,6 +307,30 @@
         .chat-input-area button:focus-visible {
             background-color: #e0e0e0;
             outline: none;
+        }
+
+        /* Typing indicator (three bouncing dots) */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 2px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: typingBounce 1.3s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.15s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-5px); opacity: 1; }
         }
     </style>
 </head>
@@ -340,8 +383,11 @@
     <footer>
         POWERED BY
         <div class="footer-tech">
-            Google Cloud &bull; Gemini AI &bull; Cloudflare
+            HTML &bull; CSS &bull; JavaScript
         </div>
+        <a href="https://claude.com" target="_blank" rel="noopener noreferrer" class="ai-credit-badge">
+            <span class="ai-credit-icon">✦</span> Development assisted by Claude
+        </a>
     </footer>
 
     <div class="chat-container closed" id="chatContainer">
@@ -364,13 +410,132 @@
     </div>
 
     <script>
+        // ---------------------------------------------------------------
+        // Keyword-matched responses. No backend, no API key, no network
+        // calls — everything runs client-side. Each rule is checked in
+        // order; the first one whose keyword list matches the user's
+        // message wins. Add / edit rules freely.
+        // ---------------------------------------------------------------
+        const chatbotRules = [
+            {
+                keywords: ["hi", "hello", "hey", "howdy", "greetings"],
+                response: "Hey! Thanks for stopping by. Feel free to ask me about Jeremy's military background, his IT and product management experience, or the projects he's currently working on."
+            },
+            {
+                keywords: ["who is jeremy", "about jeremy", "tell me about", "about you", "who are you", "background"],
+                response: "Jeremy is an IT professional and a United States Marine Corps veteran. His foundation was built in high-pressure, zero-fail environments, and he brings that same discipline, leadership, and strategic execution into tech."
+            },
+            {
+                keywords: ["marine", "military", "usmc", "veteran", "armed forces", "marine corps"],
+                response: "Jeremy served in the United States Marine Corps. That experience trained him to operate decisively and effectively under real pressure, which now shapes how he approaches leadership and execution in the tech world."
+            },
+            {
+                keywords: ["education", "school", "degree", "wgu", "western governors", "masters", "m.s.", "studying"],
+                response: "Jeremy is currently an M.S. candidate at Western Governors University, focused on Product Management and Information Technology."
+            },
+            {
+                keywords: ["product management", "product manager", "pm", "product strategy", "product lifecycle", "philosophy", "approach"],
+                response: "Jeremy's product management philosophy centers on pairing deep IT architecture knowledge with disciplined, end-to-end ownership of the product lifecycle — approaching every decision with the same zero-fail rigor he learned in the Marine Corps, and using AI tools to accelerate execution along the way."
+            },
+            {
+                keywords: ["information technology", "it background", "tech skills", "technical background", "architecture"],
+                response: "On the technical side, Jeremy specializes in IT architecture and uses that lens to inform product decisions from the ground up."
+            },
+            {
+                keywords: ["ai engineer", "artificial intelligence", "machine learning", "ai practitioner"],
+                response: "Jeremy describes himself as an AI Engineer & Practitioner — he actively uses AI tools to assist and accelerate his own development process, not just talk about it in theory."
+            },
+            {
+                keywords: ["certifications", "certified", "certs", "credentials"],
+                response: "Jeremy holds several certifications: AWS Certified Cloud Practitioner, CompTIA SecurityX, CompTIA Security+, and ITIL 4 Foundations."
+            },
+            {
+                keywords: ["aws", "cloud", "amazon web services", "cloud practitioner"],
+                response: "Jeremy is AWS Certified Cloud Practitioner (CCP) certified, giving him a solid foundation in cloud infrastructure and services."
+            },
+            {
+                keywords: ["securityx", "security+", "cybersecurity", "comptia"],
+                response: "Jeremy holds both CompTIA Security+ and the more advanced CompTIA SecurityX certification, reflecting a strong foundation in cybersecurity."
+            },
+            {
+                keywords: ["itil", "service management"],
+                response: "Jeremy is ITIL 4 Foundations certified, which covers modern IT service management practices."
+            },
+            {
+                keywords: ["projects", "portfolio", "current work", "working on"],
+                response: "Jeremy is actively building hands-on technical projects while finishing his M.S. — currently that includes custom web applications, interactive product roadmaps, and technical documentation."
+            },
+            {
+                keywords: ["web app", "web application", "website", "building web"],
+                response: "One of the things Jeremy's currently building is custom web applications — this very site is part of that hands-on work."
+            },
+            {
+                keywords: ["roadmap", "product roadmap"],
+                response: "Jeremy is developing interactive product roadmaps as part of his current project pipeline, applying his Product Management coursework to real deliverables."
+            },
+            {
+                keywords: ["architecture diagram", "documentation", "technical build manual", "diagrams"],
+                response: "Jeremy is creating technical IT documentation and architecture diagrams — check out his Technical Build Manual PDF linked in the Projects section above."
+            },
+            {
+                keywords: ["case study", "live link", "demo", "examples"],
+                response: "Jeremy's live project links and case studies are coming soon — he's actively building those out right now, so check back!"
+            },
+            {
+                keywords: ["linkedin", "connect", "social"],
+                response: "You can connect with Jeremy on LinkedIn — there's a button right at the top of this page."
+            },
+            {
+                keywords: ["contact", "email", "reach out", "hire", "hiring", "opportunity"],
+                response: "The best way to reach Jeremy right now is through LinkedIn — there's a link at the top of the page to connect with him directly."
+            },
+            {
+                keywords: ["leadership", "discipline", "lead", "execution"],
+                response: "Leadership and discipline are central to how Jeremy operates — traits forged during his time in the Marine Corps and now applied to strategic execution in tech."
+            },
+            {
+                keywords: ["thanks", "thank you", "bye", "goodbye", "appreciate"],
+                response: "You're welcome! Feel free to come back anytime if you've got more questions about Jeremy's background."
+            }
+        ];
+
+        const fallbackResponse = "That's a bit outside what I can help with here — I'm set up to answer questions about Jeremy's background, military service, certifications, and current projects. Try asking about one of those!";
+
+        function escapeRegex(str) {
+            return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        // Whole-word matching, not substring matching — this is what stops
+        // a short keyword like "hi" from accidentally firing on "his",
+        // "this", "history", etc. Each keyword is matched as its own word
+        // (or exact phrase, for multi-word keywords).
+        function getBotResponse(userText) {
+            for (const rule of chatbotRules) {
+                const matched = rule.keywords.some(kw => {
+                    const pattern = new RegExp('\\b' + escapeRegex(kw.trim()) + '\\b', 'i');
+                    return pattern.test(userText);
+                });
+                if (matched) return rule.response;
+            }
+            return fallbackResponse;
+        }
+
+        // Simulates a human typing/thinking delay based on response length,
+        // with a bit of random jitter so it doesn't feel mechanical.
+        function getTypingDelay(responseText) {
+            const baseDelay = 500;
+            const perCharacter = 12;
+            const jitter = Math.random() * 500;
+            const computed = baseDelay + Math.min(responseText.length * perCharacter, 2200) + jitter;
+            return computed;
+        }
+
         function toggleChat() {
             const container = document.getElementById('chatContainer');
             const headerBtn = document.querySelector('.chat-header');
             
             container.classList.toggle('closed');
             
-            // Update aria-expanded for screen readers
             const isClosed = container.classList.contains('closed');
             headerBtn.setAttribute('aria-expanded', !isClosed);
         }
@@ -398,65 +563,26 @@
         }
 
         async function generateBotResponse(userText, container) {
-            const WORKER_URL = "https://gemini-portfolio-bridge.jeremydowdy-usa.workers.dev"; 
-            
-            // Add a temporary loading message
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'message ai-message';
-            loadingDiv.innerText = "...";
             loadingDiv.id = 'loadingMessage';
+            loadingDiv.innerHTML = '<div class="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
             container.appendChild(loadingDiv);
             container.scrollTop = container.scrollHeight;
 
-            try {
-                const response = await fetch(WORKER_URL, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: userText }] }]
-                    })
-                });
-                
-                // Check if the response from the Worker is an error (e.g., 403 or 500)
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP ${response.status}: ${errorText}`);
-                }
-                
-                const json = await response.json();
-                
-                // Remove loading message
-                const currentLoader = document.getElementById('loadingMessage');
-                if (currentLoader) currentLoader.remove();
+            const botReply = getBotResponse(userText);
+            const delay = getTypingDelay(botReply);
 
-                // Check if the Gemini API returned an error inside the JSON
-                if (!json.candidates || !json.candidates[0]) {
-                    throw new Error("API responded but format was unexpected: " + JSON.stringify(json));
-                }
+            await new Promise(resolve => setTimeout(resolve, delay));
 
-                const botReply = json.candidates[0].content.parts[0].text;
-                const botDiv = document.createElement('div');
-                botDiv.className = 'message ai-message';
-                botDiv.innerHTML = botReply; 
-                container.appendChild(botDiv);
-                
-            } catch (error) {
-                // Remove loading message
-                const loader = document.getElementById('loadingMessage');
-                if (loader) loader.remove();
+            const currentLoader = document.getElementById('loadingMessage');
+            if (currentLoader) currentLoader.remove();
 
-                // Log the full error to your browser's developer console
-                console.error("Bot Debug Error:", error);
+            const botDiv = document.createElement('div');
+            botDiv.className = 'message ai-message';
+            botDiv.innerText = botReply;
+            container.appendChild(botDiv);
 
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'message ai-message';
-                
-                // Print the exact error message directly into the chat UI
-                errorDiv.innerText = `Debug Error: ${error.message}`;
-                errorDiv.style.backgroundColor = "#5a1a1a"; // Dark red background for errors
-                
-                container.appendChild(errorDiv);
-            }
             container.scrollTop = container.scrollHeight;
         }
     </script>
