@@ -332,6 +332,166 @@
             0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
             30% { transform: translateY(-5px); opacity: 1; }
         }
+
+        /* ---------------------------------------------------------------
+           Electrolyte Calculator (all rules scoped to #electrolyte)
+           --------------------------------------------------------------- */
+        #electrolyte .el-block {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        #electrolyte .el-block h3 {
+            font-size: 1.05em;
+            margin: 0 0 14px 0;
+        }
+
+        #electrolyte .el-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+        }
+
+        #electrolyte .el-grid + .el-grid {
+            margin-top: 14px;
+        }
+
+        #electrolyte label {
+            display: block;
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 5px;
+            font-weight: 400;
+        }
+
+        #electrolyte input[type="number"],
+        #electrolyte select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 14px;
+            font-family: inherit;
+            font-size: 0.95em;
+            font-weight: 300;
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #electrolyte input[type="number"]:focus,
+        #electrolyte select:focus {
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+
+        #electrolyte select option {
+            background-color: #1b1b1b;
+            color: #ffffff;
+        }
+
+        #electrolyte .el-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        #electrolyte .el-pre {
+            padding: 8px 16px;
+            font-family: inherit;
+            font-size: 0.85em;
+            font-weight: 400;
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #electrolyte .el-pre:hover,
+        #electrolyte .el-pre:focus-visible {
+            background-color: rgba(255, 255, 255, 0.18);
+            outline: none;
+        }
+
+        #electrolyte .el-check {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 16px;
+            font-size: 0.9em;
+            color: #f4f4f4;
+        }
+
+        #electrolyte .el-check input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            accent-color: #00ff66;
+        }
+
+        #electrolyte .el-note {
+            font-size: 0.82em;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 12px 0 0 0;
+            line-height: 1.5;
+        }
+
+        #electrolyte table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #electrolyte th,
+        #electrolyte td {
+            text-align: left;
+            padding: 10px 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        #electrolyte th {
+            font-size: 0.8em;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        #electrolyte td.num,
+        #electrolyte th.num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        #electrolyte tr.el-key td {
+            font-weight: 500;
+            color: #ffffff;
+            background-color: rgba(0, 255, 102, 0.08);
+        }
+
+        #electrolyte .el-verify {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background-color: rgba(0, 255, 102, 0.08);
+            border: 1px solid rgba(0, 255, 102, 0.25);
+            border-radius: 10px;
+            font-size: 0.92em;
+        }
+
+        #electrolyte .el-warn {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.55);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            padding-top: 16px;
+            margin: 6px 0 0 0;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -365,6 +525,82 @@
                 <li>Expanded technical documentation as new projects ship</li>
             </ul>
             <p><em>More live links and write-ups coming as they're published.</em></p>
+        </section>
+
+        <section id="electrolyte">
+            <h2>DIY Electrolyte Calculator</h2>
+            <p>I'm big into cycling and wanted an easy way to make DIY electrolytes, so here is a simple electrolyte calculator. It uses table sugar, sodium citrate, and potassium chloride, all easy to find at a grocery store, and works out exact amounts for a single dose or a full 5 lb bag.</p>
+
+            <div class="el-block">
+                <h3>Per-dose targets</h3>
+                <div class="el-presets">
+                    <button type="button" class="el-pre" data-c="80" data-na="300" data-k="100">Default (80 g / 400 mg)</button>
+                    <button type="button" class="el-pre" data-c="60" data-na="300" data-k="100">Lighter (60 g)</button>
+                    <button type="button" class="el-pre" data-c="90" data-na="400" data-k="100">Hot day (90 g / 500 mg)</button>
+                </div>
+                <div class="el-grid">
+                    <div><label for="el-carbs">Carbs (g)</label><input id="el-carbs" type="number" min="0" step="1" value="80"></div>
+                    <div><label for="el-na">Sodium (mg)</label><input id="el-na" type="number" min="0" step="10" value="300"></div>
+                    <div><label for="el-k">Potassium (mg)</label><input id="el-k" type="number" min="0" step="10" value="100"></div>
+                </div>
+                <p class="el-note">Total electrolytes per dose: <strong id="el-totE">400</strong> mg (sodium + potassium, elemental).</p>
+            </div>
+
+            <div class="el-block">
+                <h3>Ingredients &amp; batch</h3>
+                <div class="el-grid">
+                    <div>
+                        <label for="el-src">Sodium citrate form</label>
+                        <select id="el-src">
+                            <option value="0.2345">Dihydrate (most common) – 23.45% Na</option>
+                            <option value="0.2673">Anhydrous – 26.73% Na</option>
+                        </select>
+                    </div>
+                    <div><label for="el-batch">Batch size (sugar)</label><input id="el-batch" type="number" min="0" step="0.5" value="5"></div>
+                    <div>
+                        <label for="el-unit">Unit</label>
+                        <select id="el-unit"><option value="lb">lb</option><option value="kg">kg</option><option value="g">g</option></select>
+                    </div>
+                </div>
+                <div class="el-grid">
+                    <div>
+                        <label for="el-flavor">Flavor powder (optional)</label>
+                        <select id="el-flavor">
+                            <option value="none">None</option>
+                            <option value="strawberry">Strawberry (freeze-dried)</option>
+                            <option value="blackberry">Blackberry (freeze-dried)</option>
+                            <option value="lemon">Lemon (juice powder)</option>
+                            <option value="lime">Lime (juice powder)</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    <div><label for="el-ftsp">Teaspoons per dose</label><input id="el-ftsp" type="number" min="0" step="0.25" value="0"></div>
+                    <div><label for="el-fg">Grams per tsp</label><input id="el-fg" type="number" min="0" step="0.1" value="0"></div>
+                    <div><label for="el-fc">Carb % of powder</label><input id="el-fc" type="number" min="0" max="100" step="1" value="0"></div>
+                </div>
+                <label class="el-check"><input id="el-sub" type="checkbox" checked> Subtract the flavor powder's carbs from the sugar</label>
+                <p class="el-note">Flavor values are estimates. Check your product's label and edit grams/tsp and carb % to match.</p>
+            </div>
+
+            <div class="el-block">
+                <h3>One dose</h3>
+                <table>
+                    <thead><tr><th>Ingredient</th><th class="num">Amount</th></tr></thead>
+                    <tbody id="el-doseRows"></tbody>
+                </table>
+                <div class="el-verify" id="el-verify"></div>
+            </div>
+
+            <div class="el-block">
+                <h3>Full batch</h3>
+                <table>
+                    <thead><tr><th>Ingredient</th><th class="num">Amount</th></tr></thead>
+                    <tbody id="el-batchRows"></tbody>
+                </table>
+                <p class="el-note">Weigh sodium citrate and KCl on a 0.1 g (ideally 0.01 g) scale. Mix them into the sugar in stages, then shake or tumble for a few minutes. If the powders settle, run the mix through a blender or sieve once, and give it a shake before scooping.</p>
+            </div>
+
+            <p class="el-warn">Informational only, not medical advice. Potassium chloride in excess can be dangerous, especially with kidney disease or certain blood pressure/heart medications. Talk to your doctor if that applies to you, and don't exceed your intended per-dose amounts.</p>
         </section>
 
         <section id="certificates">
@@ -589,6 +825,108 @@
 
             container.scrollTop = container.scrollHeight;
         }
+    </script>
+
+    <script>
+        // ---------------------------------------------------------------
+        // Electrolyte calculator. Self-contained and scoped to #electrolyte
+        // so it can't interfere with the chat assistant above.
+        // ---------------------------------------------------------------
+        (function () {
+            var root = document.getElementById('electrolyte');
+            if (!root) return;
+
+            var KCL_K = 0.5245;          // potassium fraction of KCl (39.098 / 74.55)
+            var SUGAR_G_PER_TSP = 4.2;   // granulated sugar
+            var FLAVORS = {
+                none:       { g: 0,   c: 0 },
+                strawberry: { g: 2.5, c: 80 },
+                blackberry: { g: 2.5, c: 75 },
+                lemon:      { g: 3.0, c: 85 },
+                lime:       { g: 3.0, c: 85 }
+            };
+
+            var $ = function (id) { return document.getElementById('el-' + id); };
+            var num = function (id) { var v = parseFloat($(id).value); return isFinite(v) && v >= 0 ? v : 0; };
+            var f = function (x, d) { return x.toFixed(d); };
+
+            function row(label, val, key) {
+                return '<tr' + (key ? ' class="el-key"' : '') + '><td>' + label + '</td><td class="num">' + val + '</td></tr>';
+            }
+
+            function calc() {
+                var carbs = num('carbs'), na = num('na'), k = num('k');
+                var naFrac = parseFloat($('src').value);
+                var tsp = num('ftsp'), fg = num('fg'), fcarb = num('fc') / 100;
+                var flavorG = tsp * fg;
+                var flavorCarbs = flavorG * fcarb;
+                var sugar = $('sub').checked ? Math.max(0, carbs - flavorCarbs) : carbs;
+
+                var scG = (na / 1000) / naFrac;         // grams sodium citrate per dose
+                var kclG = (k / 1000) / KCL_K;          // grams KCl per dose
+                var doseTotal = sugar + scG + kclG + flavorG;
+                var sugarTsp = sugar / SUGAR_G_PER_TSP;
+                var cups = sugarTsp / 48;
+                var totalCarbs = sugar + flavorCarbs;
+                var doseKcal = totalCarbs * 4;          // 4 kcal per gram of carbohydrate; electrolyte salts add none
+
+                $('totE').textContent = Math.round(na + k);
+
+                $('doseRows').innerHTML =
+                    row('Table sugar', f(sugar, 1) + ' g', true) +
+                    row('Sodium citrate', f(scG, 2) + ' g') +
+                    row('Potassium chloride (KCl)', f(kclG, 2) + ' g') +
+                    (flavorG > 0 ? row('Flavor powder', f(tsp, 2).replace(/\.?0+$/, '') + ' tsp (' + f(flavorG, 1) + ' g)') : '') +
+                    row('Total mix weight', f(doseTotal, 1) + ' g') +
+                    row('Approx. volume', '≈ ' + f(sugarTsp / 3, 1) + ' tbsp (' + f(cups, 2) + ' cup)') +
+                    row('Calories', '≈ ' + Math.round(doseKcal) + ' kcal', true);
+
+                $('verify').innerHTML = 'Delivers about <strong>' + f(totalCarbs, 0) + ' g carbs</strong> (<strong>' + Math.round(doseKcal) +
+                    ' kcal</strong>), <strong>' + Math.round(na) + ' mg sodium</strong> and <strong>' + Math.round(k) + ' mg potassium</strong> per dose.';
+
+                // Batch
+                var unit = $('unit').value, b = num('batch');
+                var batchSugarG = unit === 'lb' ? b * 453.592 : unit === 'kg' ? b * 1000 : b;
+                var doses = sugar > 0 ? batchSugarG / sugar : 0;
+                var bSc = doses * scG, bKcl = doses * kclG;
+                var bFlavorG = doses * flavorG, bFlavorTsp = doses * tsp;
+                var bTotal = batchSugarG + bSc + bKcl + bFlavorG;
+
+                $('batchRows').innerHTML =
+                    row('Table sugar', f(batchSugarG, 0) + ' g' + (unit === 'lb' ? ' (' + f(b, 2).replace(/\.?0+$/, '') + ' lb)' : ''), true) +
+                    row('Sodium citrate', f(bSc, 1) + ' g') +
+                    row('Potassium chloride (KCl)', f(bKcl, 1) + ' g') +
+                    (flavorG > 0 ? row('Flavor powder', f(bFlavorTsp, 1) + ' tsp (' + f(bFlavorG, 0) + ' g)') : '') +
+                    row('Total mix weight', f(bTotal, 0) + ' g (' + f(bTotal / 453.592, 2) + ' lb)') +
+                    row('Doses per batch', f(doses, 1)) +
+                    row('Calories per batch', '≈ ' + Math.round(doses * doseKcal).toLocaleString() + ' kcal') +
+                    row('Scoop per dose', f(doseTotal, 1) + ' g of finished mix', true);
+            }
+
+            $('flavor').addEventListener('change', function () {
+                var p = FLAVORS[this.value];
+                if (p) { $('fg').value = p.g; $('fc').value = p.c; }
+                if (this.value === 'none') { $('ftsp').value = 0; }
+                else if (num('ftsp') === 0) { $('ftsp').value = 1; }
+                calc();
+            });
+
+            Array.prototype.forEach.call(root.querySelectorAll('input, select'), function (el) {
+                el.addEventListener('input', calc);
+                el.addEventListener('change', calc);
+            });
+
+            Array.prototype.forEach.call(root.querySelectorAll('.el-pre'), function (btn) {
+                btn.addEventListener('click', function () {
+                    $('carbs').value = btn.dataset.c;
+                    $('na').value = btn.dataset.na;
+                    $('k').value = btn.dataset.k;
+                    calc();
+                });
+            });
+
+            calc();
+        })();
     </script>
 </body>
 </html>
