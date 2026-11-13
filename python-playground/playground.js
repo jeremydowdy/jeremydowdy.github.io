@@ -68,7 +68,7 @@
 
     function startWorker(message) {
         ready = false;
-        setStatus("loading", message || "Loading Python… the first visit downloads about 10 MB.");
+        setStatus("loading", message || "Loading Python… the first visit takes a few seconds while it downloads.");
         updateButtons();
         try {
             worker = new Worker("worker.js");
