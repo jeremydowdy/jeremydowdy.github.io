@@ -1,0 +1,12 @@
+{
+  "_readme": "Rival strategies for the repeated border game. 'active' lists the rivals in play; 'strategies' holds each strategy's parameters. C = disarm (cooperate), D = build (defect).",
+  "strategies": {
+    "alwaysDefect": { "label": "Always builds", "description": "Builds arms every round, whatever you do.", "params": { "treatyTrust": 0 } },
+    "titForTat":    { "label": "Tit-for-tat", "description": "Disarms first, then copies your last move.", "params": { "firstMove": "C", "treatyTrust": 30 } },
+    "grudger":      { "label": "Grudger", "description": "Disarms until you build once, then builds forever.", "params": { "treatyTrust": 30 } },
+    "forgiver":     { "label": "Forgiver", "description": "Disarms unless you have built twice in a row.", "params": { "tolerance": 2, "treatyTrust": 20 } }
+  },
+  "active": [
+    { "id": "river-clan", "name": "River Clan", "strategy": "titForTat", "startTrust": 50 }
+  ]
+}

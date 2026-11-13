@@ -1,0 +1,19 @@
+[
+  {
+    "id": "shelter",
+    "name": "Shelter",
+    "era": "stone",
+    "description": "Hide-and-pole huts. Room for 6 more people, and a little more calm.",
+    "cost": { "food": 8, "energy": 6 },
+    "capacity": 6,
+    "perTurn": { "stability": 0.1 }
+  },
+  {
+    "id": "hearth",
+    "name": "Hearth",
+    "era": "stone",
+    "description": "A kept fire. Cooking stretches food, and stories told around it become knowledge.",
+    "cost": { "food": 4, "energy": 10 },
+    "perTurn": { "food": 0.5, "energy": 1, "knowledge": 0.6 }
+  }
+]

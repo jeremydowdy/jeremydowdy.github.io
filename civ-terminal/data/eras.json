@@ -1,0 +1,9 @@
+[
+  {
+    "id": "stone",
+    "name": "Stone Age",
+    "intro": "A small band camps where a river leaves the hills. They forage, fish and keep a fire going.",
+    "advanceAt": { "knowledge": 40 },
+    "next": null
+  }
+]
