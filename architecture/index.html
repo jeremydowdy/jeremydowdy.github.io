@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture | Jeremy Dowdy</title>
+    <meta name="description" content="An interactive architecture diagram of the Python Playground and Python Cheat Sheet: every component, the code behind it, and the design decisions and tradeoffs.">
+    <link rel="stylesheet" href="../assets/learn.css">
+    <link rel="stylesheet" href="architecture.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to the architecture</a>
+
+    <header class="site-header">
+        <a class="home" href="../">Jeremy Dowdy</a>
+        <h1>Architecture</h1>
+        <p>How the Python Playground and Cheat Sheet are put together.</p>
+        <nav class="page-nav" aria-label="Python pages">
+            <a href="../">Home</a>
+            <a href="../python-playground/">Playground</a>
+            <a href="../python-cheat-sheet/">Cheat sheet</a>
+            <a href="./" aria-current="page">Architecture</a>
+            <a href="build-log/">Build log</a>
+        </nav>
+    </header>
+
+    <main id="main">
+        <section class="panel arch" aria-labelledby="arch-h">
+            <h2 id="arch-h">Interactive diagram</h2>
+            <p class="arch-intro">Everything runs in the visitor's browser. The only servers involved are GitHub Pages and the Pyodide CDN, and both just deliver static files. Select a component to see what it does, the code behind it, and the decisions and tradeoffs.</p>
+
+            <div class="arch-toolbar" id="toolbar" hidden>
+                <button type="button" class="btn" id="overviewBtn" disabled>← Back to overview</button>
+                <button type="button" class="btn" id="animBtn" aria-pressed="false">Pause animation</button>
+                <p class="arch-hint" id="kbdHint">Tab moves between components, Enter opens one, Escape returns to the overview.</p>
+            </div>
+
+            <div class="arch-layout" id="archLayout" hidden>
+                <div class="diagram-wrap" id="diagramWrap">
+                    <svg id="diagram" role="group" aria-labelledby="diagramLabel" xmlns="http://www.w3.org/2000/svg">
+                        <title id="diagramLabel">Architecture diagram. Each component is a button; the text version below has the same content.</title>
+                    </svg>
+                </div>
+                <ol class="node-list" id="nodeList" aria-label="Components"></ol>
+                <aside class="detail" id="detail" aria-labelledby="detailEmptyTitle" tabindex="-1">
+                    <div class="detail-empty" id="detailEmpty">
+                        <h3 id="detailEmptyTitle">Select a component</h3>
+                        <p>Click a box in the diagram, or press Tab to reach the components and Enter to open one.</p>
+                    </div>
+                    <div id="detailBody" hidden></div>
+                </aside>
+            </div>
+
+            <p class="arch-status" id="archStatus">The interactive diagram needs JavaScript. The full text version is below.</p>
+        </section>
+
+        <section class="panel" id="text-version" aria-labelledby="text-version-h">
+            <details id="textDetails" open>
+                <summary><h2 id="text-version-h">Text version</h2></summary>
+            <!-- TEXT-VERSION:START -->
+<p>The same content as the diagram, as plain text. Components are listed from the visitor's browser down to the check logic.</p>
+<h3>Connections</h3>
+<ul class="tv-edges">
+    <li><strong>Visitor&#x27;s browser → GitHub Pages</strong> (HTTPS requests): The browser fetches pages, CSS and JavaScript from GitHub Pages.</li>
+    <li><strong>GitHub Pages → Cheat sheet page</strong> (serves): /python-cheat-sheet/ is served as static HTML.</li>
+    <li><strong>GitHub Pages → Playground page</strong> (serves): /python-playground/ and its scripts are served as static files.</li>
+    <li><strong>Cheat sheet page ↔ Lesson cross-links</strong> (practice): Each section&#x27;s Practice link goes to /python-playground/#lesson-id.</li>
+    <li><strong>Lesson cross-links ↔ Playground page</strong> (#lesson): The playground opens the lesson named in the URL hash, and links back to the matching cheat sheet section.</li>
+    <li><strong>Playground page → Code editor (CodeMirror 6)</strong> (create()): The page mounts the editor and reads code from it on Run and Check.</li>
+    <li><strong>Lessons data (lessons.js) → Playground page</strong> (LESSONS): The page reads lesson text, starter code and checks from lessons.js.</li>
+    <li><strong>Playground page ↔ Python worker (worker.js)</strong> (postMessage): The page sends {code, check}; the worker streams output back, then a done message with any error and the check result.</li>
+    <li><strong>Python worker (worker.js) → Pyodide runtime (CDN)</strong> (loads): The worker loads pyodide.js from the CDN, then calls loadPyodide().</li>
+    <li><strong>Python worker (worker.js) → Check logic</strong> (run_check()): When Check is pressed, the worker runs the lesson&#x27;s check after the visitor&#x27;s code.</li>
+    <li><strong>Lessons data (lessons.js) → Check logic</strong> (assertions): Each lesson&#x27;s check code (assert statements with hint messages) is what run_check executes.</li>
+</ul>
+<article class="tv-node" id="tv-browser" aria-labelledby="tv-browser-h">
+    <h3 id="tv-browser-h">Visitor&#x27;s browser <span class="tv-kind">Browser</span></h3>
+    <p>Where everything actually runs: the pages, the editor, and Python itself.</p>
+    <h4>What it does</h4>
+    <p>Downloads the static pages from GitHub Pages and runs all of the code locally, including Python, through Pyodide in a Web Worker. Lesson drafts and completed lessons are saved in the browser&#x27;s localStorage under keys starting with &quot;pyplay:&quot;, so progress stays on that device.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/playground.js">python-playground/playground.js</a></figcaption><pre><code>    // localStorage can be unavailable (private mode, blocked storage), so
+    // every access is wrapped and the page still works without it.
+    var store = {
+        get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+        set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignore */ } },
+        remove: function (k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
+    };</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>No server-side code: the site&#x27;s README describes the site as zero-backend, hosted statically &quot;to mitigate traditional server-side vulnerabilities&quot;, and the playground follows that by running Python in the visitor&#x27;s browser. Saved progress uses localStorage, wrapped so the page still works if storage is blocked.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>No accounts or server, so nothing to secure or pay for, but progress lives in one browser and is lost if site data is cleared.</li>
+        <li>Every visitor downloads the Python runtime themselves, so the first visit is slower than a server-run playground would be.</li>
+        <li>In private browsing or with storage blocked, the playground still works but doesn&#x27;t remember drafts.</li>
+    </ul>
+    <p>From the build log: <a href="build-log/#worker-and-checks">Ran Python in a Web Worker and wrote the five lessons</a></p>
+</article>
+<article class="tv-node" id="tv-hosting" aria-labelledby="tv-hosting-h">
+    <h3 id="tv-hosting-h">GitHub Pages <span class="tv-kind">Hosting</span></h3>
+    <p>Static hosting for www.jeremydowdy.com, deployed from the main branch.</p>
+    <h4>What it does</h4>
+    <p>Serves every file in the repository as-is. The CNAME file maps the site to www.jeremydowdy.com, and each push to main triggers GitHub&#x27;s built-in &quot;pages build and deployment&quot; run. There is no build step and no workflow file in the repo; each page is a folder with an index.html.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/CNAME">CNAME</a></figcaption><pre><code>www.jeremydowdy.com</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>Pages are plain folders (/python-playground/, /python-cheat-sheet/, /architecture/) so they work on GitHub Pages without any build tooling. The README gives the reason for static hosting: no server-side attack surface.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>Deploys are just pushes to main, which is simple, but there&#x27;s no staging step: whatever is pushed goes live.</li>
+        <li>Generated files (the cheat sheet, the editor bundle, this page&#x27;s text version) have to be regenerated by hand and committed, because nothing builds them on deploy.</li>
+    </ul>
+    <p class="todo"><strong>TODO:</strong> Confirm or add why GitHub Pages was chosen over other static hosts.</p>
+    <p>From the build log: <a href="build-log/#inspect-and-plan">Inspected the site and planned the pages</a>, <a href="build-log/#first-push">Shipped the playground and cheat sheet</a></p>
+</article>
+<article class="tv-node" id="tv-cheatsheet" aria-labelledby="tv-cheatsheet-h">
+    <h3 id="tv-cheatsheet-h">Cheat sheet page <span class="tv-kind">Page</span></h3>
+    <p>A static reference page. No Python runtime needed.</p>
+    <h4>What it does</h4>
+    <p>Nine sections with 31 example code blocks, a table of contents, and a Copy button on every example. The HTML is generated by python-cheat-sheet/source/generate.py, which can also run every runnable example with real Python before publishing.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-cheat-sheet/cheat-sheet.js">python-cheat-sheet/cheat-sheet.js</a></figcaption><pre><code>    function copy(text) {
+        if (navigator.clipboard &amp;&amp; window.isSecureContext) {
+            return navigator.clipboard.writeText(text).catch(function () { return fallbackCopy(text); });
+        }
+        return fallbackCopy(text);
+    }</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>Generated, plain HTML instead of a page built in the browser: the source README says generating it means every example is HTML-escaped the same way and can be tested before it&#x27;s published. The copy button uses the Clipboard API where it&#x27;s available and falls back to selecting the text.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>Content changes mean editing generate.py and re-running it, not editing index.html directly (edits there would be overwritten next time).</li>
+        <li>Examples aren&#x27;t syntax highlighted, which keeps the page free of JavaScript dependencies but plainer to read.</li>
+    </ul>
+    <p><a href="../python-cheat-sheet/">Open the cheat sheet</a></p>
+    <p>From the build log: <a href="build-log/#cheat-sheet-examples">Generated the cheat sheet and ran every example</a>, <a href="build-log/#copy-indent">Copy buttons copied extra spaces</a>, <a href="build-log/#generator-and-load-message">Committed the cheat sheet generator and corrected the loading message</a></p>
+</article>
+<article class="tv-node" id="tv-crosslinks" aria-labelledby="tv-crosslinks-h">
+    <h3 id="tv-crosslinks-h">Lesson cross-links <span class="tv-kind">Links</span></h3>
+    <p>URL-hash links that connect each cheat sheet section to its playground lesson and back.</p>
+    <h4>What it does</h4>
+    <p>Each cheat sheet section with a matching lesson ends in a &quot;Practice&quot; link to /python-playground/#lesson-id; the playground reads the hash and opens that lesson. In the other direction, each lesson&#x27;s &quot;Open the Python cheat sheet&quot; link points to the matching section, using the CHEAT_SECTIONS map.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/playground.js">python-playground/playground.js</a></figcaption><pre><code>    var CHEAT_SECTIONS = {
+        &quot;variables&quot;: &quot;variables&quot;,
+        &quot;conditionals&quot;: &quot;conditionals&quot;,
+        &quot;loops&quot;: &quot;loops&quot;,
+        &quot;lists-dicts&quot;: &quot;collections&quot;,
+        &quot;functions&quot;: &quot;functions&quot;
+    };</code></pre></figure>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-cheat-sheet/source/generate.py">python-cheat-sheet/source/generate.py</a></figcaption><pre><code>def lesson_link(lesson):
+    if not lesson: return &quot;&quot;
+    lid, label = lesson
+    return f&#x27;&lt;p class=&quot;practice&quot;&gt;&lt;a href=&quot;../python-playground/#{lid}&quot;&gt;Practice {html.escape(label)} →&lt;/a&gt;&lt;/p&gt;&#x27;</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>The two pages are joined by plain links with URL hashes: lessons.js notes that each lesson&#x27;s id is its URL hash and that the cheat sheet links there. Neither page loads code from the other.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>Lesson ids are written in three places (lessons.js, CHEAT_SECTIONS and generate.py), so renaming a lesson means updating all three.</li>
+        <li>Strings, built-ins and errors have no lesson yet, so those sections don&#x27;t get a practice link (Strings links to Lesson 1, which uses f-strings).</li>
+    </ul>
+    <p class="todo"><strong>TODO:</strong> The code doesn&#x27;t record why lessons are addressed by URL hash instead of separate pages. Add your reasoning if you&#x27;d like it shown.</p>
+    <p><a href="../python-playground/#variables">Open Lesson 1</a></p>
+    <p>From the build log: <a href="build-log/#copy-indent">Copy buttons copied extra spaces</a></p>
+</article>
+<article class="tv-node" id="tv-playground" aria-labelledby="tv-playground-h">
+    <h3 id="tv-playground-h">Playground page <span class="tv-kind">Page</span></h3>
+    <p>The lesson UI: explanation, task, editor, Run / Check / Reset and the output panel.</p>
+    <h4>What it does</h4>
+    <p>Shows the current lesson, sends the editor&#x27;s code to the Python worker when you press Run or Check, streams the output into the panel, highlights errors, and shows pass or fail with a hint. Run and Check stay disabled until the worker reports that Python is ready. If a run takes longer than 10 seconds, it stops the worker and starts a new one.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/playground.js">python-playground/playground.js</a></figcaption><pre><code>    function run(isCheck) {
+        if (!ready || running) return;
+        hideResult();
+        clearOutput();
+        var id = ++runCounter;
+        running = { id: id, isCheck: isCheck };
+        updateButtons();
+        worker.postMessage({
+            type: &quot;run&quot;,
+            id: id,
+            code: editor.getCode(),
+            check: isCheck ? LESSONS[index].check : null
+        });
+        timer = setTimeout(function () { timedOut(isCheck); }, TIMEOUT_MS);
+    }</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>The page never runs Python itself; it only talks to the worker with messages. That keeps the page responsive and makes the timeout possible: a stuck worker can simply be terminated.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>Stopping a runaway program means restarting Python, so the next Run waits a few seconds for it to load again.</li>
+        <li>Each run starts with fresh variables, so code from a previous run can&#x27;t affect the next one, but you also can&#x27;t build up state across runs.</li>
+    </ul>
+    <p class="todo"><strong>TODO:</strong> The 10-second limit (TIMEOUT_MS = 10000) isn&#x27;t explained in the code. Confirm it&#x27;s the limit you want, and why.</p>
+    <p><a href="../python-playground/">Open the playground</a></p>
+    <p>From the build log: <a href="build-log/#worker-and-checks">Ran Python in a Web Worker and wrote the five lessons</a>, <a href="build-log/#stdout-end">First test run: lost output and a trimmed traceback</a>, <a href="build-log/#output-flood">An infinite print loop swamped the page</a></p>
+</article>
+<article class="tv-node" id="tv-editor" aria-labelledby="tv-editor-h">
+    <h3 id="tv-editor-h">Code editor (CodeMirror 6) <span class="tv-kind">Module</span></h3>
+    <p>The syntax-highlighted Python editor, bundled into one file.</p>
+    <h4>What it does</h4>
+    <p>Provides line numbers, undo history, bracket matching, auto-closing brackets, Python highlighting, 4-space indentation and a dark theme. Ctrl/Cmd + Enter runs the code. It&#x27;s exposed to the page as PyEditor.create().</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/vendor/codemirror-entry.js">python-playground/vendor/codemirror-entry.js</a></figcaption><pre><code>export function create(parent, doc, { onRun, onChange, label } = {}) {
+  const runKey = { key: &quot;Mod-Enter&quot;, preventDefault: true, run: () =&gt; { if (onRun) onRun(); return true; } };
+  const view = new EditorView({
+    parent,
+    state: EditorState.create({
+      doc,
+      extensions: [
+        lineNumbers(), highlightActiveLineGutter(), highlightActiveLine(), drawSelection(),
+        history(), indentOnInput(), bracketMatching(), closeBrackets(),
+        indentUnit.of(&quot;    &quot;), EditorState.tabSize.of(4),
+        python(), syntaxHighlighting(highlight), theme,
+        keymap.of([runKey, ...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap, indentWithTab]),
+        EditorView.contentAttributes.of({ &quot;aria-label&quot;: label || &quot;Python code editor&quot; }),
+        EditorView.updateListener.of(u =&gt; { if (u.docChanged &amp;&amp; onChange) onChange(); })
+      ]
+    })
+  });
+  return {
+    view,
+    getCode: () =&gt; view.state.doc.toString(),
+    setCode: code =&gt; view.dispatch({ changes: { from: 0, to: view.state.doc.length, insert: code } }),
+    focus: () =&gt; view.focus()
+  };
+}</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>Bundled with esbuild into vendor/codemirror.min.js instead of loaded from a CDN. The vendor README gives the reason: so the playground doesn&#x27;t depend on a CDN resolving CodeMirror&#x27;s many small packages.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>The bundle is a 377 KB file (127 KB gzipped) committed to the repo.</li>
+        <li>Upgrading CodeMirror means rebuilding the bundle by hand with the steps in vendor/README.md.</li>
+        <li>Tab indents code, so keyboard users press Escape, then Tab, to move focus out of the editor (the editor&#x27;s label says so).</li>
+    </ul>
+    <p>From the build log: <a href="build-log/#editor-bundle">Bundled the CodeMirror 6 editor into one file</a></p>
+</article>
+<article class="tv-node" id="tv-lessons" aria-labelledby="tv-lessons-h">
+    <h3 id="tv-lessons-h">Lessons data (lessons.js) <span class="tv-kind">Data</span></h3>
+    <p>The five lessons: explanation, task, starter code and the check for each.</p>
+    <h4>What it does</h4>
+    <p>Defines window.LESSONS in order: variables and types, conditionals, loops, lists and dictionaries, functions. Each lesson has an id (its URL hash), title, intro, task, starter code and a check. The expected results live in the check: Python assert statements about the output or variables, whose messages are the hints.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/lessons.js">python-playground/lessons.js</a></figcaption><pre><code>// Lessons for the Python Playground, in order.
+//
+// Each lesson has:
+//   id       URL hash, e.g. /python-playground/#loops (the cheat sheet links here)
+//   title    shown in the lesson list
+//   intro    short explanation (HTML)
+//   task     what to do (HTML)
+//   starter  starter code (Reset restores this)
+//   check    Python run after the user&#x27;s code. It can use:
+//              ns        the user&#x27;s variables, e.g. ns[&quot;age&quot;]
+//              output    everything the code printed, as one string
+//              lines     printed lines, trimmed
+//              code      the user&#x27;s code as text
+//              run_with  re-run the code with a variable changed, e.g. run_with(score=95)
+//            Each failed `assert` shows its message to the user as the hint.</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>Expected results are written as Python assertions instead of a fixed expected-output string. That lets a check test variable values and types, ignore extra example output, and re-run the code with other inputs, as the conditionals lesson does with run_with(score=...).</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>More flexible than comparing text, but each check is a small program that has to be written and tested.</li>
+        <li>Lesson content is HTML inside a JavaScript file, so editing it means being careful with quotes and backslashes.</li>
+    </ul>
+    <p class="todo"><strong>TODO:</strong> The lesson topics and order are in the code, but the reasoning for this sequence isn&#x27;t. Add your reasoning if you&#x27;d like it shown here.</p>
+    <p><a href="../python-playground/#variables">Start the lessons</a></p>
+    <p>From the build log: <a href="build-log/#worker-and-checks">Ran Python in a Web Worker and wrote the five lessons</a></p>
+</article>
+<article class="tv-node" id="tv-worker" aria-labelledby="tv-worker-h">
+    <h3 id="tv-worker-h">Python worker (worker.js) <span class="tv-kind">Module</span></h3>
+    <p>A Web Worker that loads Pyodide and runs the visitor&#x27;s code.</p>
+    <h4>What it does</h4>
+    <p>Loads Pyodide, then runs each program in a fresh namespace. Printed output is batched and sent to the page every 50 ms or 4 KB, and capped at 50,000 characters. Tracebacks are cleaned up so they start at the visitor&#x27;s own code (main.py), with the source line shown. input() is replaced with a friendly error, since a worker can&#x27;t read the keyboard.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/worker.js">python-playground/worker.js</a></figcaption><pre><code>onmessage = async event =&gt; {
+    const msg = event.data;
+    if (msg.type !== &quot;run&quot;) return;
+    try {
+        await ready;
+    } catch (e) {
+        return;
+    }
+
+    current = { id: msg.id, output: &quot;&quot;, truncated: false, pending: [], pendingSize: 0, lastFlush: Date.now() };
+    let result = { error: null };
+    let check = null;
+    try {
+        result = JSON.parse(runUser(msg.code));
+        if (msg.check) {
+            check = result.error
+                ? { passed: false, hint: &quot;Your code raised an error. Fix it first (see the output panel), then check again.&quot; }
+                : JSON.parse(runCheck(msg.check, current.output));
+        }
+    } catch (e) {
+        result = { error: &quot;Playground error: &quot; + String((e &amp;&amp; e.message) || e) };
+    }
+    flush();
+    const id = current.id;
+    current = null;
+    postMessage({ type: &quot;done&quot;, id, error: result.error, check });
+};</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>The worker file&#x27;s opening comment gives the reason for the design: running Python in a Web Worker &quot;so a slow or infinite loop never freezes the page&quot;, and so the page can terminate it and start a fresh one.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>input() can&#x27;t work, because a worker has no way to pause for keyboard input without extra browser features (cross-origin isolation headers) that GitHub Pages doesn&#x27;t let you set.</li>
+        <li>Output is delivered in small batches rather than instantly, which keeps the page responsive under heavy printing.</li>
+    </ul>
+    <p class="todo"><strong>TODO:</strong> The 50,000-character output cap and the 50 ms / 4 KB batch sizes aren&#x27;t explained in the code. Confirm these limits.</p>
+    <p>From the build log: <a href="build-log/#worker-and-checks">Ran Python in a Web Worker and wrote the five lessons</a>, <a href="build-log/#stdout-end">First test run: lost output and a trimmed traceback</a>, <a href="build-log/#output-flood">An infinite print loop swamped the page</a></p>
+</article>
+<article class="tv-node" id="tv-pyodide" aria-labelledby="tv-pyodide-h">
+    <h3 id="tv-pyodide-h">Pyodide runtime (CDN) <span class="tv-kind">External service</span></h3>
+    <p>CPython compiled to WebAssembly, loaded from the official jsDelivr CDN.</p>
+    <h4>What it does</h4>
+    <p>Provides a real Python interpreter in the browser. The worker loads Pyodide 0.29.5 from cdn.jsdelivr.net/pyodide/v0.29.5/full/. Its core files measure 12.3 MB uncompressed (about 5.5 MB gzipped). Only the standard library is used; no extra packages are loaded.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/worker.js">python-playground/worker.js</a></figcaption><pre><code>const PYODIDE_VERSION = &quot;0.29.5&quot;;
+const PYODIDE_BASE = &quot;https://cdn.jsdelivr.net/pyodide/v&quot; + PYODIDE_VERSION + &quot;/full/&quot;;</code></pre></figure>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/worker.js">python-playground/worker.js</a></figcaption><pre><code>const ready = (async () =&gt; {
+    importScripts(PYODIDE_BASE + &quot;pyodide.js&quot;);
+    pyodide = await loadPyodide({ indexURL: PYODIDE_BASE });
+    // Raw (unbuffered) handlers, so text printed with end=&quot;&quot; isn&#x27;t lost.
+    const outDecoder = new TextDecoder();
+    const errDecoder = new TextDecoder();
+    pyodide.setStdout({ write: buf =&gt; { emit(&quot;stdout&quot;, outDecoder.decode(buf, { stream: true })); return buf.length; } });
+    pyodide.setStderr({ write: buf =&gt; { emit(&quot;stderr&quot;, errDecoder.decode(buf, { stream: true })); return buf.length; } });
+    pyodide.runPython(HARNESS);
+    runUser = pyodide.globals.get(&quot;run_user&quot;);
+    runCheck = pyodide.globals.get(&quot;run_check&quot;);
+})();</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>The version is pinned to one exact release in PYODIDE_VERSION rather than following &quot;latest&quot;. Output uses raw (unbuffered) handlers, per the comment in the code, so text printed with end=&quot;&quot; isn&#x27;t lost.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>The first visit downloads several megabytes before Run is enabled; later visits can come from the browser cache.</li>
+        <li>The playground depends on the CDN being reachable. If it isn&#x27;t, the page shows an error with a Try again button.</li>
+        <li>Staying on a pinned version means upgrades are a manual change to PYODIDE_VERSION.</li>
+    </ul>
+    <p class="todo"><strong>TODO:</strong> The code pins 0.29.5 but doesn&#x27;t say why that version, or why pinning. The build log records how it was picked during the build session; add the version policy you want.</p>
+    <p>From the build log: <a href="build-log/#inspect-and-plan">Inspected the site and planned the pages</a>, <a href="build-log/#pyodide-version">Picked a Pyodide version</a>, <a href="build-log/#stdout-end">First test run: lost output and a trimmed traceback</a>, <a href="build-log/#generator-and-load-message">Committed the cheat sheet generator and corrected the loading message</a></p>
+</article>
+<article class="tv-node" id="tv-check" aria-labelledby="tv-check-h">
+    <h3 id="tv-check-h">Check logic <span class="tv-kind">Module</span></h3>
+    <p>Runs the lesson&#x27;s assertions against the visitor&#x27;s output and variables.</p>
+    <h4>What it does</h4>
+    <p>After the visitor&#x27;s code runs, run_check executes the lesson&#x27;s check with the visitor&#x27;s variables (ns), printed output (output and lines), code, and run_with, which re-runs the code with a variable replaced. A passing check returns passed; the first failed assert returns its message as the hint. If the code itself raised an error, Check fails and asks you to fix the error first.</p>
+    <figure class="tv-code"><figcaption><a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/python-playground/worker.js">python-playground/worker.js</a></figcaption><pre><code>def run_check(check, output):
+    env = {
+        &quot;ns&quot;: _last[&quot;ns&quot;],
+        &quot;code&quot;: _last[&quot;code&quot;],
+        &quot;output&quot;: output,
+        &quot;lines&quot;: [l.rstrip() for l in output.strip().splitlines()],
+        &quot;run_with&quot;: run_with,
+    }
+    try:
+        exec(check, env)
+        return json.dumps({&quot;passed&quot;: True, &quot;hint&quot;: None})
+    except AssertionError as e:
+        return json.dumps({&quot;passed&quot;: False, &quot;hint&quot;: str(e) or &quot;Not quite. Compare your output with the task.&quot;})
+    except Exception as e:
+        return json.dumps({&quot;passed&quot;: False, &quot;hint&quot;: f&quot;Your code hit an error while being checked: {type(e).__name__}: {e}&quot;})</code></pre></figure>
+    <h4>Design decision</h4>
+    <p>Checks run inside the same Python worker as the code they test, so they can inspect real variable values and types, not just printed text.</p>
+    <h4>Tradeoffs</h4>
+    <ul>
+        <li>Checks run in the visitor&#x27;s browser, so a determined visitor could make a check pass without solving it. That&#x27;s fine for practice, but it isn&#x27;t a grading system.</li>
+        <li>run_with relies on the starter&#x27;s top-level assignment line (for example, score = 83) staying in the code; if it&#x27;s removed, the hint asks the visitor to keep it.</li>
+    </ul>
+    <p>From the build log: <a href="build-log/#worker-and-checks">Ran Python in a Web Worker and wrote the five lessons</a></p>
+</article>
+            <!-- TEXT-VERSION:END -->
+            </details>
+        </section>
+    </main>
+
+    <footer>
+        POWERED BY
+        <div class="footer-tech">
+            HTML &bull; CSS &bull; JavaScript &bull; SVG
+        </div>
+        <a href="https://claude.com" target="_blank" rel="noopener noreferrer" class="ai-credit-badge">
+            <span class="ai-credit-icon">✦</span> Development assisted by Claude
+        </a>
+    </footer>
+
+    <script src="architecture.js"></script>
+</body>
+</html>
