@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIY Electrolyte Calculator | Jeremy Dowdy</title>
+    <meta name="description" content="A simple DIY electrolyte calculator for cycling: pick a strength and a bag of sugar, and get the batch recipe plus how much to scoop into each bottle.">
+    <link rel="stylesheet" href="../assets/learn.css">
+    <link rel="stylesheet" href="calculator.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to the calculator</a>
+
+    <header class="site-header">
+        <a class="home" href="../">Jeremy Dowdy</a>
+        <h1>DIY Electrolyte Calculator</h1>
+        <p>Batch recipes for homemade cycling electrolytes.</p>
+        <nav class="page-nav" aria-label="Site">
+            <a href="../">Home</a>
+        </nav>
+    </header>
+
+    <main id="main">
+    <section id="electrolyte" class="panel calc" aria-labelledby="calc-h">
+        <h2 id="calc-h">Make your own electrolyte mix</h2>
+        <p>I'm big into cycling and wanted an easy way to make DIY electrolytes. Pick a strength and how big a bag of sugar you're starting with, and it gives you the batch recipe plus how much to scoop into each bottle. It uses table sugar, sodium citrate and potassium chloride, all easy to find at a grocery store.</p>
+
+        <div class="el-block">
+            <h3>1. Strength per bottle</h3>
+            <div class="el-presets" role="group" aria-label="Strength per bottle">
+                <button type="button" class="el-pre" data-c="60" data-na="300" data-k="100" aria-pressed="false">Light<span>60 g carbs</span></button>
+                <button type="button" class="el-pre" data-c="80" data-na="300" data-k="100" aria-pressed="true">Standard<span>80 g carbs</span></button>
+                <button type="button" class="el-pre" data-c="90" data-na="400" data-k="100" aria-pressed="false">Hot day<span>90 g + salt</span></button>
+            </div>
+            <p class="el-note" id="el-summary"></p>
+            <details class="el-adv">
+                <summary>Custom amounts</summary>
+                <div class="el-grid">
+                    <div><label for="el-carbs">Carbs (g)</label><input id="el-carbs" type="number" min="0" step="5" value="80"></div>
+                    <div><label for="el-na">Sodium (mg)</label><input id="el-na" type="number" min="0" step="25" value="300"></div>
+                    <div><label for="el-k">Potassium (mg)</label><input id="el-k" type="number" min="0" step="25" value="100"></div>
+                </div>
+                <div class="el-grid">
+                    <div>
+                        <label for="el-src">Sodium citrate type (check the label)</label>
+                        <select id="el-src">
+                            <option value="0.2345">Dihydrate (most common)</option>
+                            <option value="0.2673">Anhydrous</option>
+                        </select>
+                    </div>
+                </div>
+            </details>
+        </div>
+
+        <div class="el-block">
+            <h3>2. Batch &amp; flavor</h3>
+            <div class="el-grid">
+                <div><label for="el-batch">Bag of sugar</label><input id="el-batch" type="number" min="0" step="0.5" value="5"></div>
+                <div>
+                    <label for="el-unit">Unit</label>
+                    <select id="el-unit"><option value="lb">lb</option><option value="kg">kg</option></select>
+                </div>
+                <div class="el-wide">
+                    <label for="el-flavor">Flavor (optional)</label>
+                    <select id="el-flavor">
+                        <option value="none">None</option>
+                        <option value="strawberry">Strawberry powder</option>
+                        <option value="blackberry">Blackberry powder</option>
+                        <option value="lemon">Lemon juice powder</option>
+                        <option value="lime">Lime juice powder</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+            </div>
+            <div class="el-grid" id="el-customFlavor" hidden>
+                <div><label for="el-fg">Flavor grams per bottle</label><input id="el-fg" type="number" min="0" step="0.5" value="3"></div>
+                <div><label for="el-fc">Carbs in flavor (%)</label><input id="el-fc" type="number" min="0" max="100" step="5" value="80"></div>
+            </div>
+            <p class="el-note" id="el-flavorNote" hidden>Flavor is about 1 tsp per bottle. Its carbs are taken out of the sugar so each bottle stays on target.</p>
+        </div>
+
+        <div class="el-block">
+            <h3>3. Your recipe</h3>
+            <table>
+                <tbody id="el-batchRows"></tbody>
+            </table>
+            <div class="el-scoop" id="el-scoop" aria-live="polite"></div>
+            <p class="el-note">Weigh the sodium citrate and potassium chloride on a 0.1 g scale. Mix them into the sugar a bit at a time, then shake the container for a few minutes. Give it a shake before each scoop, since the fine powders can settle.</p>
+        </div>
+
+        <p class="el-warn">Informational only, not medical advice. Potassium chloride in excess can be dangerous, especially with kidney disease or certain blood pressure/heart medications. Talk to your doctor if that applies to you, and don't exceed your intended per-bottle amounts.</p>
+    </section>
+    </main>
+
+    <footer>
+        POWERED BY
+        <div class="footer-tech">
+            HTML &bull; CSS &bull; JavaScript
+        </div>
+        <a href="https://claude.com" target="_blank" rel="noopener noreferrer" class="ai-credit-badge">
+            <span class="ai-credit-icon">✦</span> Development assisted by Claude
+        </a>
+    </footer>
+
+    <script src="calculator.js"></script>
+</body>
+</html>
