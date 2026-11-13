@@ -220,6 +220,19 @@
         "commit": "6a99daa",
         "live": "2026-11-13T04:24:58Z"
       }
+    },
+    {
+      "id": "civ-terminal-slice",
+      "date": "2026-11-13",
+      "title": "Civ Terminal: first playable slice",
+      "tried": "Started a new project at /civ-terminal/: a civilization sim played in a terminal, on a pure black page with a WebGL wireframe map. Built a vertical slice before anything else: one era (Stone Age), two structures, two dilemma cards, one tit-for-tat rival with a recurring arms-race decision, and the boot log and name prompt working end to end. The simulation is plain JavaScript with a seeded random stream, so the same seed and the same choices always give the same score, and game content lives in JSON data files. The map is raw WebGL2 with no library; settlers, huts and hearths are drawn in one instanced call.",
+      "broke": "Running the tests with \"node --test tests/\" failed outright with \"error: 'test failed'\" and ran nothing. Two of my own tests were wrong: both assumed no decision was waiting when the shared-store card had correctly come up at turn 4. A report showed that against a lone tit-for-tat rival, always disarming won on all six seeds tried, so a test titled as if no strategy always wins was claiming something the slice can't show. In the browser, an effect of -0.15 stability per turn displayed as \"-0.1\", the prompt line sat indented and detached from the output, and the map was cropped on the left with empty space above it.",
+      "fixed": "Pointed the test script at tests/*.test.js. Corrected the two tests to answer the waiting card first, and renamed the strategy test to a plain report, with a note that the claim needs the other rival strategies in play. Printed per-turn stability to two decimals. The stray indent came from line breaks in the HTML inside an element that preserves whitespace, so the input line's markup went onto one line. The camera now works out, for whatever shape the map pane is, how steeply to look down and how far to back off so the whole map fits.",
+      "components": [],
+      "shipped": {
+        "commit": "21892b2",
+        "live": null
+      }
     }
   ]
 }
