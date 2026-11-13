@@ -231,7 +231,21 @@
       "components": [],
       "shipped": {
         "commit": "21892b2",
-        "live": null
+        "live": "2026-11-13T21:04:51Z"
+      },
+      "note": "The deploy for this commit was cancelled when the next commit was pushed 43 seconds later. The next deploy carried it live."
+    },
+    {
+      "id": "civ-terminal-pixel-game",
+      "date": "2026-11-13",
+      "title": "Civ Terminal: from a terminal to a colorful pixel-art game",
+      "tried": "Feedback after playing the first slice: it shouldn't stay a terminal. The terminal is now only the start screen; naming the civilization opens a small old-school game screen with a blue river, trees and hills, and buttons for building. The WebGL wireframe map was replaced with a 320x200 pixel-art map on a plain 2D canvas, which is lighter. New rules from the same feedback: only campfires can be built until 15 knowledge (fires spread knowledge), cooking is discovered at 8 knowledge and speeds up learning, and expeditions go out and come back with 1 knowledge. These are data files (discoveries.json, expeditions.json), so more can be added without code.",
+      "broke": "The report was that building didn't take energy. Checking first: it did (energy 100 went to 90 in a test), but the terminal only answered \"Built a hearth\" and never showed the numbers, so it looked like nothing happened. The game screen now shows costs on the buttons, animates changes on the resource bar, and the log says what was paid. Then testing in a browser found more. The disabled-button marker was written as aria-disabled=\"\" instead of \"true\", so locked buttons weren't dimmed and would have been announced as enabled; my own test noticed because it never found a \"false\" value. The decision card measured 1,689px tall on a 900px screen and sat at the bottom: the screen's fade-in animation left an identity transform behind, and any transform makes fixed-position children position against that element instead of the window. After a decision closed, keyboard focus landed on nothing, because the buttons are redrawn and the old one was gone. Two of my own tests were wrong (one crossed 8 knowledge during the \"before cooking\" case; one forgot a newborn adds energy). A bot playing well finished the Stone Age at turn 20, too quick.",
+      "fixed": "Wrote aria-disabled as \"true\"/\"false\". Changed the fade-in to opacity only, and made the card center itself without being cut off. Focus now returns to the same control by name. Fixed both tests. Moved the end of the Stone Age from 40 to 60 knowledge: the same bot now takes about 28 turns. Also shrank the map from 384x240 to 320x200 so buildings read larger, made the build buttons one per row, and capped the floating +/- numbers at three per resource. Added 20 unit tests and a browser smoke test (34 checks) to the repo. Saves from the first build are not loaded, since the state changed.",
+      "components": [],
+      "shipped": {
+        "commit": "3f99f77",
+        "live": "2026-11-13T21:39:02Z"
       }
     }
   ]
