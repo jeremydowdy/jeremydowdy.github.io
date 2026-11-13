@@ -1,0 +1,209 @@
+{
+  "title": "Build log: Python Playground and Cheat Sheet",
+  "intro": "How the Python Playground, the Python Cheat Sheet and this architecture page were built, step by step, including what broke along the way. Every entry matches a real commit in the repository.",
+  "repo": "https://github.com/jeremydowdy/jeremydowdy.github.io",
+  "entries": [
+    {
+      "id": "inspect-and-plan",
+      "date": "2026-11-13",
+      "title": "Inspected the site and planned the pages",
+      "tried": "Read the repository first. The site is a single hand-written index.html with inline CSS and JavaScript, served by GitHub Pages straight from the main branch (no build step, no workflow files). So each new page became its own folder with an index.html: /python-playground/ and /python-cheat-sheet/, plus shared styles in /assets/learn.css.",
+      "broke": "The build sandbox's network refused the CDNs the playground needs: requests to cdn.jsdelivr.net and esm.sh failed with \"CONNECT tunnel failed, response 403\". That meant Pyodide couldn't be loaded from its CDN while testing.",
+      "fixed": "Installed the same Pyodide release (0.29.5) from npm and had the test browser answer requests for the CDN URLs with those local files. The page itself still loads Pyodide from the official CDN; only the test harness swaps the source, and because the files are the same release, the test exercises the same code that ships.",
+      "components": [
+        "pyodide",
+        "hosting"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "pyodide-version",
+      "date": "2026-11-13",
+      "title": "Picked a Pyodide version",
+      "tried": "npm listed two release lines: the long-running 0.x line (latest 0.29.5, published 2026-09-16) and a newer 314.x line. Chose 0.29.5 because its CDN path (cdn.jsdelivr.net/pyodide/v0.29.5/full/) follows the long-established pattern, and pinned it in worker.js.",
+      "broke": null,
+      "fixed": null,
+      "note": "The CDN URL couldn't be opened from the sandbox, so the first real load from the CDN happened on the live site.",
+      "components": [
+        "pyodide"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "editor-bundle",
+      "date": "2026-11-13",
+      "title": "Bundled the CodeMirror 6 editor into one file",
+      "tried": "Loading CodeMirror 6 directly from a CDN means importing many small packages that must share one copy of @codemirror/state, which CDNs don't always guarantee. Instead, bundled the editor (line numbers, history, bracket matching, Python highlighting, a dark theme) with esbuild into python-playground/vendor/codemirror.min.js, and kept the entry file and rebuild steps next to it.",
+      "broke": null,
+      "fixed": null,
+      "note": "This was a precaution, not a reaction to an observed failure. The cost is a 377 KB file (127 KB gzipped) in the repo that has to be rebuilt by hand to upgrade.",
+      "components": [
+        "editor"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "worker-and-checks",
+      "date": "2026-11-13",
+      "title": "Ran Python in a Web Worker and wrote the five lessons",
+      "tried": "Put Pyodide in a Web Worker (worker.js) so a beginner's infinite loop can't freeze the page: the page stops the worker after 10 seconds and starts a fresh one. Wrote the five lessons in lessons.js, each with a Python check made of assert statements whose messages become the hints. The conditionals check re-runs the user's code with other scores via run_with(score=...), so hard-coding the answer doesn't pass. Before testing, changed the loops check to look only at the last five printed lines, so learners don't have to delete the example code first.",
+      "broke": null,
+      "fixed": null,
+      "components": [
+        "worker",
+        "lessons",
+        "check",
+        "playground"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "stdout-end",
+      "date": "2026-11-13",
+      "title": "First test run: lost output and a trimmed traceback",
+      "tried": "Ran an automated browser test through every lesson: run the starter, check a wrong answer, check a right answer, then error cases.",
+      "broke": "All five lessons passed and failed correctly, but print(\"no newline\", end=\"\") showed \"(Your code ran but didn't print anything.)\". Pyodide's line-batched stdout callback never delivered the final line because it had no newline, even with sys.stdout.flush() at the end of the run. Separately, SyntaxError tracebacks lost the two leading spaces on their File \"main.py\" line.",
+      "fixed": "Replaced the batched callback with raw write handlers (pyodide.setStdout({ write })) that decode bytes with a streaming TextDecoder, so every byte printed reaches the page whether or not it ends in a newline. For the traceback, trimmed only trailing whitespace instead of calling trim(), which had also stripped the leading indentation.",
+      "components": [
+        "worker",
+        "playground"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "output-flood",
+      "date": "2026-11-13",
+      "title": "An infinite print loop swamped the page",
+      "tried": "Tested while True: print(\"spam\"), expecting the 10-second timeout message.",
+      "broke": "The test gave up: \"page.waitForFunction: Timeout 25000ms exceeded\" while waiting for the timeout message. Each print() was sent to the page as its own message, so the page spent its time appending thousands of tiny updates and scrolling after each one.",
+      "fixed": "The worker now batches output and sends it every 50 ms or 4 KB, whichever comes first, and the page scrolls at most once per animation frame. Output is still capped at 50,000 characters. On the re-run the timeout fired and the output showed the truncation notice.",
+      "components": [
+        "worker",
+        "playground"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "cheat-sheet-examples",
+      "date": "2026-11-13",
+      "title": "Generated the cheat sheet and ran every example",
+      "tried": "Wrote the cheat sheet content in a small Python generator so every example is HTML-escaped the same way, and so each runnable example could be executed with real Python before publishing. All 25 runnable examples ran without errors, and the three error examples raised the NameError, TypeError and IndexError they describe.",
+      "broke": "The sample traceback included \"Did you mean: 'name'?\", but running the same two lines with Python 3.13 printed only \"NameError: name 'nmae' is not defined\".",
+      "fixed": "Removed the suggestion line so the sample matches what learners will actually see.",
+      "components": [
+        "cheatsheet"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "copy-indent",
+      "date": "2026-11-13",
+      "title": "Copy buttons copied extra spaces",
+      "tried": "Tested the copy buttons by clicking one and reading the clipboard back.",
+      "broke": "The copied text came back as \"name = \\\"Ada\\\"\\n                p...\": every line after the first had 16 extra spaces. The generator had indented the HTML for readability, including the lines inside <pre>, where whitespace is significant, so the spaces were also visible on the page.",
+      "fixed": "Stopped indenting the code blocks in the generator. Afterwards all 31 copy buttons copied exactly the code shown. Also reworded the practice links (\"Practice Lesson 3, Loops\").",
+      "components": [
+        "cheatsheet",
+        "crosslinks"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "first-push",
+      "date": "2026-11-13",
+      "title": "Shipped the playground and cheat sheet",
+      "tried": "Committed both pages and the Published-list link on the home page, then pushed to main.",
+      "broke": "The first push command also force-pushed the working branch, which the session's permission guard refused, so nothing was pushed.",
+      "fixed": "The force wasn't needed: the branch was a straight continuation of main. A normal push went through, and GitHub Pages deployed it in about 45 seconds.",
+      "components": [
+        "hosting"
+      ],
+      "shipped": {
+        "commit": "c709432",
+        "live": "2026-11-13T04:01:50Z"
+      }
+    },
+    {
+      "id": "generator-and-load-message",
+      "date": "2026-11-13",
+      "title": "Committed the cheat sheet generator and corrected the loading message",
+      "tried": "Started the architecture page by checking every claim against the code. Two problems turned up. The cheat sheet's generator script had only existed outside the repository, so the page couldn't be regenerated from what was committed. And the playground's loading message said the first visit \"downloads about 10 MB\", a number that had never been measured.",
+      "broke": "Measuring Pyodide 0.29.5's core files (pyodide.js, pyodide.asm.js, pyodide.asm.wasm, python_stdlib.zip, pyodide-lock.json) gave 12.3 MB uncompressed, about 5.5 MB gzipped, so \"about 10 MB\" matched neither.",
+      "fixed": "Added the generator, its template and a README under python-cheat-sheet/source/, and confirmed it regenerates the published page byte-for-byte. Changed the loading message to \"the first visit takes a few seconds while it downloads\", which is true whatever the compression.",
+      "components": [
+        "cheatsheet",
+        "pyodide",
+        "playground"
+      ],
+      "shipped": {
+        "commit": "6f150f4",
+        "live": "2026-11-13T04:10:26Z"
+      }
+    },
+    {
+      "id": "architecture-page",
+      "date": "2026-11-13",
+      "title": "Built the interactive architecture page",
+      "tried": "Wrote architecture.json by reading each part of the code: 10 components and 11 connections, with code excerpts copied by line range rather than retyped, and decisions taken from code comments and READMEs. Two draft decisions (why Pyodide is pinned, why lessons use URL hashes) gave reasons the code doesn't state, so they were rewritten to describe only what the code does, with a TODO for the reasoning. The page renders the diagram as SVG from the JSON with no libraries, and a small script (architecture/tools/build.py) checks that every excerpt still matches its file and writes the static text version.",
+      "broke": "Testing turned up five problems. The text version's code blocks had 16 extra spaces on every line after the first: the same <pre> indentation mistake as the cheat sheet generator. The detail panel's heading reported \"Select a component\" after a node was opened, because the placeholder and the real heading shared the id detailTitle. While zoomed in, clicking another node failed with \"element is outside of the viewport\". With JavaScript turned off, the empty diagram area still showed, because CSS display rules overrode the hidden attribute. And in screenshots, edge labels were clipped by the boxes on either side (only a 46-pixel gap) and rendered at about 8 pixels.",
+      "fixed": "Stopped re-indenting generated HTML. Gave the placeholder heading its own id and pointed the panel's aria-labelledby at whichever heading is showing. Made the view pan to any node that receives keyboard focus while zoomed (mouse users can use the Connections list or Back to overview). Added a site-wide [hidden] { display: none !important; } rule. Widened the column gaps to 100 pixels, gave the diagram two-thirds of the row, enlarged the text and shortened the edge labels; an automated check then found no label overlapping a box.",
+      "components": [
+        "playground",
+        "cheatsheet",
+        "crosslinks",
+        "worker",
+        "pyodide",
+        "lessons",
+        "check",
+        "editor",
+        "hosting",
+        "browser"
+      ],
+      "shipped": {
+        "commit": "8a30a48",
+        "live": null
+      }
+    },
+    {
+      "id": "accessibility-pass",
+      "date": "2026-11-13",
+      "title": "Accessibility pass across the new pages",
+      "tried": "Looked at the new pages in screenshots and ran the axe-core accessibility checker on all of them, at desktop and phone widths.",
+      "broke": "Screenshots showed the header subtitle and nav pills were hard to read against the bright sky in the background photo. axe reported the cheat sheet's sideways-scrolling code blocks as \"scrollable-region-focusable\" (13 blocks): keyboard users couldn't scroll them. axe also marked text on the see-through panels as needing manual contrast review, since it can't measure text over a photo. On a phone, a failed Pyodide load made the playground 455 pixels wide on a 375-pixel screen, because the error message includes a long URL that couldn't wrap.",
+      "fixed": "Darkened the glass panels from 35% to 60% black and lightened the grey text. Working out the worst case (pure white behind a panel) by hand, body text now stays above the 4.5:1 contrast minimum. Gave the header text and nav pills a dark backing. Made the cheat sheet's code blocks focusable, through the generator so it survives regeneration, with a visible focus ring. Let the playground's status text wrap. After the changes, axe reported no violations on any page at desktop width. At phone width, one remained: CodeMirror's internal scroll container. That one was left as is, because keyboard users focus the editor itself and the view follows the cursor.",
+      "components": [
+        "playground",
+        "cheatsheet",
+        "editor"
+      ],
+      "shipped": {
+        "commit": "96ba609",
+        "live": null
+      }
+    }
+  ]
+}

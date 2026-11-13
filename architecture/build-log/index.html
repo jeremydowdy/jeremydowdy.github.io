@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Log | Jeremy Dowdy</title>
+    <meta name="description" content="A timeline of how the Python Playground, Python Cheat Sheet and architecture page were built, including what broke and how it was fixed.">
+    <link rel="stylesheet" href="../../assets/learn.css">
+    <link rel="stylesheet" href="build-log.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to the build log</a>
+
+    <header class="site-header">
+        <a class="home" href="../../">Jeremy Dowdy</a>
+        <h1>Build Log</h1>
+        <p>How the Python Playground and Cheat Sheet were built, including what broke.</p>
+        <nav class="page-nav" aria-label="Python pages">
+            <a href="../../">Home</a>
+            <a href="../../python-playground/">Playground</a>
+            <a href="../../python-cheat-sheet/">Cheat sheet</a>
+            <a href="../">Architecture</a>
+            <a href="./" aria-current="page">Build log</a>
+        </nav>
+    </header>
+
+    <main id="main" class="panel log">
+        <p class="log-intro">Each entry is one step of the build: what I tried, what went wrong (quoted from the actual error where there was one) and how it was fixed. "Shipped" links to the commit on GitHub and gives the time GitHub Pages finished deploying it. The entries live in <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/blob/main/architecture/build-log/build-log.json">build-log.json</a>; component tags link to the <a href="../">architecture diagram</a>.</p>
+            <!-- BUILD-LOG:START -->
+<ol class="timeline">
+    <li class="entry" id="inspect-and-plan">
+        <article aria-labelledby="inspect-and-plan-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="inspect-and-plan-h">Inspected the site and planned the pages</h2>
+            <h3>What I tried, and why</h3>
+            <p>Read the repository first. The site is a single hand-written index.html with inline CSS and JavaScript, served by GitHub Pages straight from the main branch (no build step, no workflow files). So each new page became its own folder with an index.html: /python-playground/ and /python-cheat-sheet/, plus shared styles in /assets/learn.css.</p>
+            <h3>What broke</h3>
+            <p class="broke">The build sandbox&#x27;s network refused the CDNs the playground needs: requests to cdn.jsdelivr.net and esm.sh failed with &quot;CONNECT tunnel failed, response 403&quot;. That meant Pyodide couldn&#x27;t be loaded from its CDN while testing.</p>
+            <h3>How I fixed it</h3>
+            <p>Installed the same Pyodide release (0.29.5) from npm and had the test browser answer requests for the CDN URLs with those local files. The page itself still loads Pyodide from the official CDN; only the test harness swaps the source, and because the files are the same release, the test exercises the same code that ships.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#pyodide">Pyodide runtime (CDN)</a> <a class="chip" href="../#hosting">GitHub Pages</a></p>
+        </article>
+    </li>
+    <li class="entry" id="pyodide-version">
+        <article aria-labelledby="pyodide-version-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="pyodide-version-h">Picked a Pyodide version</h2>
+            <h3>What I tried, and why</h3>
+            <p>npm listed two release lines: the long-running 0.x line (latest 0.29.5, published 2026-09-16) and a newer 314.x line. Chose 0.29.5 because its CDN path (cdn.jsdelivr.net/pyodide/v0.29.5/full/) follows the long-established pattern, and pinned it in worker.js.</p>
+            <p class="smooth">This step went smoothly.</p>
+            <p class="note">The CDN URL couldn&#x27;t be opened from the sandbox, so the first real load from the CDN happened on the live site.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#pyodide">Pyodide runtime (CDN)</a></p>
+        </article>
+    </li>
+    <li class="entry" id="editor-bundle">
+        <article aria-labelledby="editor-bundle-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="editor-bundle-h">Bundled the CodeMirror 6 editor into one file</h2>
+            <h3>What I tried, and why</h3>
+            <p>Loading CodeMirror 6 directly from a CDN means importing many small packages that must share one copy of @codemirror/state, which CDNs don&#x27;t always guarantee. Instead, bundled the editor (line numbers, history, bracket matching, Python highlighting, a dark theme) with esbuild into python-playground/vendor/codemirror.min.js, and kept the entry file and rebuild steps next to it.</p>
+            <p class="smooth">This step went smoothly.</p>
+            <p class="note">This was a precaution, not a reaction to an observed failure. The cost is a 377 KB file (127 KB gzipped) in the repo that has to be rebuilt by hand to upgrade.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#editor">Code editor (CodeMirror 6)</a></p>
+        </article>
+    </li>
+    <li class="entry" id="worker-and-checks">
+        <article aria-labelledby="worker-and-checks-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="worker-and-checks-h">Ran Python in a Web Worker and wrote the five lessons</h2>
+            <h3>What I tried, and why</h3>
+            <p>Put Pyodide in a Web Worker (worker.js) so a beginner&#x27;s infinite loop can&#x27;t freeze the page: the page stops the worker after 10 seconds and starts a fresh one. Wrote the five lessons in lessons.js, each with a Python check made of assert statements whose messages become the hints. The conditionals check re-runs the user&#x27;s code with other scores via run_with(score=...), so hard-coding the answer doesn&#x27;t pass. Before testing, changed the loops check to look only at the last five printed lines, so learners don&#x27;t have to delete the example code first.</p>
+            <p class="smooth">This step went smoothly.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#worker">Python worker (worker.js)</a> <a class="chip" href="../#lessons">Lessons data (lessons.js)</a> <a class="chip" href="../#check">Check logic</a> <a class="chip" href="../#playground">Playground page</a></p>
+        </article>
+    </li>
+    <li class="entry" id="stdout-end">
+        <article aria-labelledby="stdout-end-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="stdout-end-h">First test run: lost output and a trimmed traceback</h2>
+            <h3>What I tried, and why</h3>
+            <p>Ran an automated browser test through every lesson: run the starter, check a wrong answer, check a right answer, then error cases.</p>
+            <h3>What broke</h3>
+            <p class="broke">All five lessons passed and failed correctly, but print(&quot;no newline&quot;, end=&quot;&quot;) showed &quot;(Your code ran but didn&#x27;t print anything.)&quot;. Pyodide&#x27;s line-batched stdout callback never delivered the final line because it had no newline, even with sys.stdout.flush() at the end of the run. Separately, SyntaxError tracebacks lost the two leading spaces on their File &quot;main.py&quot; line.</p>
+            <h3>How I fixed it</h3>
+            <p>Replaced the batched callback with raw write handlers (pyodide.setStdout({ write })) that decode bytes with a streaming TextDecoder, so every byte printed reaches the page whether or not it ends in a newline. For the traceback, trimmed only trailing whitespace instead of calling trim(), which had also stripped the leading indentation.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#worker">Python worker (worker.js)</a> <a class="chip" href="../#playground">Playground page</a></p>
+        </article>
+    </li>
+    <li class="entry" id="output-flood">
+        <article aria-labelledby="output-flood-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="output-flood-h">An infinite print loop swamped the page</h2>
+            <h3>What I tried, and why</h3>
+            <p>Tested while True: print(&quot;spam&quot;), expecting the 10-second timeout message.</p>
+            <h3>What broke</h3>
+            <p class="broke">The test gave up: &quot;page.waitForFunction: Timeout 25000ms exceeded&quot; while waiting for the timeout message. Each print() was sent to the page as its own message, so the page spent its time appending thousands of tiny updates and scrolling after each one.</p>
+            <h3>How I fixed it</h3>
+            <p>The worker now batches output and sends it every 50 ms or 4 KB, whichever comes first, and the page scrolls at most once per animation frame. Output is still capped at 50,000 characters. On the re-run the timeout fired and the output showed the truncation notice.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#worker">Python worker (worker.js)</a> <a class="chip" href="../#playground">Playground page</a></p>
+        </article>
+    </li>
+    <li class="entry" id="cheat-sheet-examples">
+        <article aria-labelledby="cheat-sheet-examples-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="cheat-sheet-examples-h">Generated the cheat sheet and ran every example</h2>
+            <h3>What I tried, and why</h3>
+            <p>Wrote the cheat sheet content in a small Python generator so every example is HTML-escaped the same way, and so each runnable example could be executed with real Python before publishing. All 25 runnable examples ran without errors, and the three error examples raised the NameError, TypeError and IndexError they describe.</p>
+            <h3>What broke</h3>
+            <p class="broke">The sample traceback included &quot;Did you mean: &#x27;name&#x27;?&quot;, but running the same two lines with Python 3.13 printed only &quot;NameError: name &#x27;nmae&#x27; is not defined&quot;.</p>
+            <h3>How I fixed it</h3>
+            <p>Removed the suggestion line so the sample matches what learners will actually see.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#cheatsheet">Cheat sheet page</a></p>
+        </article>
+    </li>
+    <li class="entry" id="copy-indent">
+        <article aria-labelledby="copy-indent-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="copy-indent-h">Copy buttons copied extra spaces</h2>
+            <h3>What I tried, and why</h3>
+            <p>Tested the copy buttons by clicking one and reading the clipboard back.</p>
+            <h3>What broke</h3>
+            <p class="broke">The copied text came back as &quot;name = \&quot;Ada\&quot;\n                p...&quot;: every line after the first had 16 extra spaces. The generator had indented the HTML for readability, including the lines inside &lt;pre&gt;, where whitespace is significant, so the spaces were also visible on the page.</p>
+            <h3>How I fixed it</h3>
+            <p>Stopped indenting the code blocks in the generator. Afterwards all 31 copy buttons copied exactly the code shown. Also reworded the practice links (&quot;Practice Lesson 3, Loops&quot;).</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#cheatsheet">Cheat sheet page</a> <a class="chip" href="../#crosslinks">Lesson cross-links</a></p>
+        </article>
+    </li>
+    <li class="entry" id="first-push">
+        <article aria-labelledby="first-push-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="first-push-h">Shipped the playground and cheat sheet</h2>
+            <h3>What I tried, and why</h3>
+            <p>Committed both pages and the Published-list link on the home page, then pushed to main.</p>
+            <h3>What broke</h3>
+            <p class="broke">The first push command also force-pushed the working branch, which the session&#x27;s permission guard refused, so nothing was pushed.</p>
+            <h3>How I fixed it</h3>
+            <p>The force wasn&#x27;t needed: the branch was a straight continuation of main. A normal push went through, and GitHub Pages deployed it in about 45 seconds.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/c709432"><code>c709432</code></a>, went live <time datetime="2026-11-13T04:01:50Z">2026-11-13 04:01 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#hosting">GitHub Pages</a></p>
+        </article>
+    </li>
+    <li class="entry" id="generator-and-load-message">
+        <article aria-labelledby="generator-and-load-message-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="generator-and-load-message-h">Committed the cheat sheet generator and corrected the loading message</h2>
+            <h3>What I tried, and why</h3>
+            <p>Started the architecture page by checking every claim against the code. Two problems turned up. The cheat sheet&#x27;s generator script had only existed outside the repository, so the page couldn&#x27;t be regenerated from what was committed. And the playground&#x27;s loading message said the first visit &quot;downloads about 10 MB&quot;, a number that had never been measured.</p>
+            <h3>What broke</h3>
+            <p class="broke">Measuring Pyodide 0.29.5&#x27;s core files (pyodide.js, pyodide.asm.js, pyodide.asm.wasm, python_stdlib.zip, pyodide-lock.json) gave 12.3 MB uncompressed, about 5.5 MB gzipped, so &quot;about 10 MB&quot; matched neither.</p>
+            <h3>How I fixed it</h3>
+            <p>Added the generator, its template and a README under python-cheat-sheet/source/, and confirmed it regenerates the published page byte-for-byte. Changed the loading message to &quot;the first visit takes a few seconds while it downloads&quot;, which is true whatever the compression.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/6f150f4"><code>6f150f4</code></a>, went live <time datetime="2026-11-13T04:10:26Z">2026-11-13 04:10 UTC</time></p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#cheatsheet">Cheat sheet page</a> <a class="chip" href="../#pyodide">Pyodide runtime (CDN)</a> <a class="chip" href="../#playground">Playground page</a></p>
+        </article>
+    </li>
+    <li class="entry" id="architecture-page">
+        <article aria-labelledby="architecture-page-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="architecture-page-h">Built the interactive architecture page</h2>
+            <h3>What I tried, and why</h3>
+            <p>Wrote architecture.json by reading each part of the code: 10 components and 11 connections, with code excerpts copied by line range rather than retyped, and decisions taken from code comments and READMEs. Two draft decisions (why Pyodide is pinned, why lessons use URL hashes) gave reasons the code doesn&#x27;t state, so they were rewritten to describe only what the code does, with a TODO for the reasoning. The page renders the diagram as SVG from the JSON with no libraries, and a small script (architecture/tools/build.py) checks that every excerpt still matches its file and writes the static text version.</p>
+            <h3>What broke</h3>
+            <p class="broke">Testing turned up five problems. The text version&#x27;s code blocks had 16 extra spaces on every line after the first: the same &lt;pre&gt; indentation mistake as the cheat sheet generator. The detail panel&#x27;s heading reported &quot;Select a component&quot; after a node was opened, because the placeholder and the real heading shared the id detailTitle. While zoomed in, clicking another node failed with &quot;element is outside of the viewport&quot;. With JavaScript turned off, the empty diagram area still showed, because CSS display rules overrode the hidden attribute. And in screenshots, edge labels were clipped by the boxes on either side (only a 46-pixel gap) and rendered at about 8 pixels.</p>
+            <h3>How I fixed it</h3>
+            <p>Stopped re-indenting generated HTML. Gave the placeholder heading its own id and pointed the panel&#x27;s aria-labelledby at whichever heading is showing. Made the view pan to any node that receives keyboard focus while zoomed (mouse users can use the Connections list or Back to overview). Added a site-wide [hidden] { display: none !important; } rule. Widened the column gaps to 100 pixels, gave the diagram two-thirds of the row, enlarged the text and shortened the edge labels; an automated check then found no label overlapping a box.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/8a30a48"><code>8a30a48</code></a>, not live yet</p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#playground">Playground page</a> <a class="chip" href="../#cheatsheet">Cheat sheet page</a> <a class="chip" href="../#crosslinks">Lesson cross-links</a> <a class="chip" href="../#worker">Python worker (worker.js)</a> <a class="chip" href="../#pyodide">Pyodide runtime (CDN)</a> <a class="chip" href="../#lessons">Lessons data (lessons.js)</a> <a class="chip" href="../#check">Check logic</a> <a class="chip" href="../#editor">Code editor (CodeMirror 6)</a> <a class="chip" href="../#hosting">GitHub Pages</a> <a class="chip" href="../#browser">Visitor&#x27;s browser</a></p>
+        </article>
+    </li>
+    <li class="entry" id="accessibility-pass">
+        <article aria-labelledby="accessibility-pass-h">
+            <p class="entry-date"><time datetime="2026-11-13">2026-11-13</time></p>
+            <h2 id="accessibility-pass-h">Accessibility pass across the new pages</h2>
+            <h3>What I tried, and why</h3>
+            <p>Looked at the new pages in screenshots and ran the axe-core accessibility checker on all of them, at desktop and phone widths.</p>
+            <h3>What broke</h3>
+            <p class="broke">Screenshots showed the header subtitle and nav pills were hard to read against the bright sky in the background photo. axe reported the cheat sheet&#x27;s sideways-scrolling code blocks as &quot;scrollable-region-focusable&quot; (13 blocks): keyboard users couldn&#x27;t scroll them. axe also marked text on the see-through panels as needing manual contrast review, since it can&#x27;t measure text over a photo. On a phone, a failed Pyodide load made the playground 455 pixels wide on a 375-pixel screen, because the error message includes a long URL that couldn&#x27;t wrap.</p>
+            <h3>How I fixed it</h3>
+            <p>Darkened the glass panels from 35% to 60% black and lightened the grey text. Working out the worst case (pure white behind a panel) by hand, body text now stays above the 4.5:1 contrast minimum. Gave the header text and nav pills a dark backing. Made the cheat sheet&#x27;s code blocks focusable, through the generator so it survives regeneration, with a visible focus ring. Let the playground&#x27;s status text wrap. After the changes, axe reported no violations on any page at desktop width. At phone width, one remained: CodeMirror&#x27;s internal scroll container. That one was left as is, because keyboard users focus the editor itself and the view follows the cursor.</p>
+            <p class="shipped"><span class="shipped-label">Shipped</span> <a href="https://github.com/jeremydowdy/jeremydowdy.github.io/commit/96ba609"><code>96ba609</code></a>, not live yet</p>
+            <p class="components"><span class="sr-only">Related components: </span><a class="chip" href="../#playground">Playground page</a> <a class="chip" href="../#cheatsheet">Cheat sheet page</a> <a class="chip" href="../#editor">Code editor (CodeMirror 6)</a></p>
+        </article>
+    </li>
+</ol>
+            <!-- BUILD-LOG:END -->
+    </main>
+
+    <footer>
+        POWERED BY
+        <div class="footer-tech">
+            HTML &bull; CSS
+        </div>
+        <a href="https://claude.com" target="_blank" rel="noopener noreferrer" class="ai-credit-badge">
+            <span class="ai-credit-icon">✦</span> Development assisted by Claude
+        </a>
+    </footer>
+</body>
+</html>
