@@ -247,6 +247,19 @@
         "commit": "3f99f77",
         "live": "2026-11-13T21:39:02Z"
       }
+    },
+    {
+      "id": "civ-terminal-seasons-population",
+      "date": "2026-11-13",
+      "title": "Civ Terminal: a calendar, a timeline, and a population that lives",
+      "tried": "Feedback after playing: each turn should sit on a timeline, and the population should grow and shrink on its own, with more births meaning more food needed, and unhappy people leaving with food and knowledge. First I checked why nothing moved: in three test seeds the population sat at exactly 16 for 40 turns, because growth stopped at the shelter limit and nothing else ever added or removed people. I replaced that with a calendar (a turn is a season, set per era in the data), seasons that forage differently (winter at half), and real demography: adults have babies when there is food in store, children eat half as much but don't work for 12 turns, people die of sickness (more in winter), and famine hits children hardest. Hunger and crowding wear down stability, and below a threshold some of the band walk away, taking their share of the food and more than their share of the knowledge. A timeline panel records every turn: the date, people, births, deaths, departures and what you did, with a pixel chart. Saves from the previous build are migrated instead of dropped.",
+      "broke": "Playing three simple bots over 40 seeds showed the first version of the rates worked but was too gentle: population moved (between 5 and 34) and nobody collapsed, but famines and walk-outs averaged under one per run, which is not the drama that was asked for. I raised the birth rate from 0.06 to 0.1, hunger unrest from 3 to 4, and lowered the base room to 20, then re-ran 60 seeds. Four of my new tests failed on their first run, all my own mistakes: one set food eaten to zero, which made a starving band look infinitely secure so it kept having babies; a fertility test was saturated for the same reason; one forgot a small contentment bonus; one stopped at a decision card. One old test (\"crowded\") became trivially true after the change, so I removed it. The chart drew little vertical tick marks at every turn from my line code. The log still told players to look in a History panel that no longer exists.",
+      "fixed": "Tests now set up one rule at a time. The chart uses a proper pixel line routine. The log points to the timeline. With the final rates, a sensible bot over 70 turns on 30 seeds grew the band by about 18 people, with about 2 walk-outs and 0.5 famines per run, and the Stone Age ended around turn 39 on all 80 seeds tried. No bot collapsed. Added 19 unit tests (87 in all) and 15 browser checks (49 in all).",
+      "components": [],
+      "shipped": {
+        "commit": "ecb9cde",
+        "live": "2026-11-13T22:04:30Z"
+      }
     }
   ]
 }
