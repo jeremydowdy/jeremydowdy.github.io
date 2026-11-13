@@ -23,7 +23,7 @@ export function createPixelMap(canvas, { seed, reducedMotion = false }) {
 
   let world = createWorld(seed);
   let sim = createSim(seed);
-  let view = { pop: 0, structures: {}, flags: {}, parties: [], turn: 1 };
+  let view = { pop: 0, kids: 0, structures: {}, flags: {}, parties: [], turn: 1, tint: null, cold: false };
   let terrain = null, ripples = [];
   let raf = 0, last = 0, acc = 0, time = 0, running = false;
   let pulses = [];
@@ -142,6 +142,10 @@ export function createPixelMap(canvas, { seed, reducedMotion = false }) {
   // ---------------------------------------------------------------- drawing
   function drawSettler(a, i) {
     const x = Math.round(a.x * W), y = Math.round(a.y * H);
+    if (i >= view.pop) {                       // children are smaller
+      ctx.fillStyle = SETTLER_COLORS[i % SETTLER_COLORS.length]; ctx.fillRect(x, y - 2, 2, 2);
+      return;
+    }
     ctx.fillStyle = '#f2c48a'; ctx.fillRect(x, y - 3, 2, 1);
     ctx.fillStyle = SETTLER_COLORS[i % SETTLER_COLORS.length]; ctx.fillRect(x, y - 2, 2, 2);
   }
@@ -226,6 +230,18 @@ export function createPixelMap(canvas, { seed, reducedMotion = false }) {
     sim.agents.forEach(drawSettler);
     drawParty();
 
+    // The season: a soft color wash, and snow in the cold.
+    if (view.tint) { ctx.globalAlpha = view.tint[1]; ctx.fillStyle = view.tint[0]; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+    if (view.cold) {
+      ctx.fillStyle = '#ffffff';
+      for (let k = 0; k < 46; k++) {
+        const sx = reducedMotion ? hash2(k, 5, 41) * W : (hash2(k, 5, 41) * W + Math.sin(time * 0.8 + k) * 5 + W) % W;
+        const sy = reducedMotion ? hash2(k, 6, 42) * H : (time * (7 + (k % 5)) + hash2(k, 6, 42) * H) % H;
+        ctx.globalAlpha = 0.85; ctx.fillRect(Math.round(sx), Math.round(sy), k % 4 ? 1 : 2, k % 4 ? 1 : 2);
+      }
+      ctx.globalAlpha = 1;
+    }
+
     // A ring that flares where something was just built.
     for (const p of pulses) {
       const t = (time - p.start) / 0.9;
@@ -260,10 +276,12 @@ export function createPixelMap(canvas, { seed, reducedMotion = false }) {
   if (!document.hidden) start();
 
   return {
-    setState(state) {
+    // `look` is { tint: [color, strength], cold } for the current season.
+    setState(state, look = {}) {
       if (state.seed !== seed) { seed = state.seed; world = createWorld(seed); sim = createSim(seed); paintTerrain(); }
-      view = { pop: state.pop, structures: { ...state.structures }, flags: { ...state.flags }, parties: state.parties.map((p) => ({ ...p })), turn: state.turn };
-      syncCount(sim, state.pop, campSites());
+      view = { pop: state.pop, kids: state.kids, structures: { ...state.structures }, flags: { ...state.flags },
+        parties: state.parties.map((p) => ({ ...p })), turn: state.turn, tint: look.tint || null, cold: !!look.cold };
+      syncCount(sim, state.pop + state.kids, campSites());
     },
     setReducedMotion(v) { reducedMotion = v; },
     pulse(kind) {

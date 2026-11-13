@@ -130,6 +130,40 @@ try {
   await p.waitForSelector('#game:not([hidden])');
   eq((await saved(p)).turn, before.turn, 'loading restores the same turn');
 
+  console.log('Calendar, population and timeline');
+  const q = await open();
+  await begin(q, 'Calendar');
+  const turns = async (n) => { for (let i = 0; i < n; i++) { if (await q.isVisible('#modal')) { await q.keyboard.press('a'); await q.waitForTimeout(40); i--; continue; } await q.keyboard.press('n'); await q.waitForTimeout(25); } };
+  ok((await q.textContent('.hud-sub')).includes('Spring, year 1'), 'the top bar shows the date: Spring, year 1');
+  eq(await q.textContent('#clock'), 'Spring, year 1', 'a date badge sits on the map');
+  await turns(1);
+  ok((await q.textContent('#log')).includes('Summer begins'), 'the log announces each new season');
+  await turns(2);
+  eq(await q.textContent('#clock'), 'Winter, year 1', 'turn 4 is winter');
+  ok(await q.$eval('#clock', (e) => e.classList.contains('cold')), '... and the badge turns icy');
+  await turns(1);
+  eq(await q.textContent('#clock'), 'Spring, year 2', 'four turns later it is year 2');
+  await turns(14);
+  const rows = await q.$$eval('#tlList .trow', (x) => x.map((e) => e.innerText));
+  ok(rows.length >= 18 && /now/.test(rows[0]), 'the timeline has a row for every turn, with this turn on top');
+  ok(rows.some((r) => /Winter, year 1/.test(r)) && rows.some((r) => /\+\d+ born/.test(r)), 'rows show the season and births');
+  const w = await saved(q);
+  ok(w.timeline.reduce((n, r) => n + r.born, 0) > 0 && w.kids + w.pop > 12, 'people were born and the population grew by itself');
+  ok(/People: \d+ to \d+/.test(await q.getAttribute('#chart', 'aria-label')), 'the chart has a text version with the numbers');
+  ok((await q.textContent('[data-chip="pop"]')).includes('adults'), 'the population chip shows adults and kids');
+  ok((await q.textContent('[data-chip="food"]')).includes('foraging'), 'the food chip shows how this season forages');
+  await q.keyboard.press('`'); await q.keyboard.type('set speed instant'); await q.keyboard.press('Enter');
+  for (const c of ['set rule foragePerPerson 0.2', 'set rule hungerUnrest 30', 'wait 12']) { await q.keyboard.type(c); await q.keyboard.press('Enter'); await q.waitForTimeout(100); }
+  await q.keyboard.press('Escape');
+  const lg = await q.textContent('#log');
+  ok(/Famine/.test(lg), 'when food runs out there is famine');
+  ok(/walked away, .*taking .* food/.test(lg) || /walked away, taking/.test(lg), 'unhappy people walk away, taking food and knowledge with them');
+  const mid = await saved(q);
+  await q.evaluate((save) => { for (const k of ['kids', 'cohorts', 'clock', 'timeline']) delete save[k]; save.v = 2; localStorage.setItem('civ-terminal:save:v1', JSON.stringify(save)); }, mid);
+  await q.reload(); await q.keyboard.press('Space'); await q.waitForFunction(() => !document.getElementById('in').disabled);
+  await q.keyboard.type('load'); await q.keyboard.press('Enter'); await q.waitForSelector('#game:not([hidden])');
+  ok(/year \d+/.test(await q.textContent('.hud-sub')), 'a save from the previous build loads and gets a calendar');
+
   console.log('Small screens and reduced motion');
   const phone = await open({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await begin(phone);

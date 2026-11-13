@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import * as game from '../js/game.js';
 import { score } from '../js/scoring.js';
 import { isValidSave, validateName } from '../js/state.js';
-import { capacity } from '../js/economy.js';
 import { loadData, play } from './helpers.js';
 
 const data = loadData();
@@ -67,10 +66,6 @@ test('the economy: people need food and shelter', () => {
   assert.ok(starving.pop < before);
   assert.ok(starving.history.length >= 1);
 
-  const crowded = game.newGame('E', 'eco', data);
-  crowded.food = 500;
-  game.advance(crowded, data, 5);
-  assert.ok(crowded.pop <= capacity(crowded, data));
 });
 
 test('building spends resources, and refuses when you cannot afford it', () => {

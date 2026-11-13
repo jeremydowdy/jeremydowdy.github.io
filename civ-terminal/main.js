@@ -11,6 +11,7 @@ import * as game from './js/game.js';
 import { createCommands } from './js/commands.js';
 import { createPixelMap } from './js/pixelmap.js';
 import { createUI } from './js/ui.js';
+import { people } from './js/economy.js';
 import { storageAvailable, saveGame, loadGame, clearGame, loadSettings, saveSettings } from './js/saves.js';
 
 const $ = (id) => document.getElementById(id);
@@ -36,13 +37,13 @@ function seedFromHash() {
 }
 
 const shareUrl = (seed) => `${location.origin}${location.pathname}#seed=${encodeURIComponent(seed)}`;
-const snapshot = (s) => ({ pop: s.pop, food: s.food, energy: s.energy, knowledge: s.knowledge, stability: s.stability });
+const snapshot = (s) => ({ pop: people(s), food: s.food, energy: s.energy, knowledge: s.knowledge, stability: s.stability });
 
-const LOG_CLASS = { alert: 'alert', era: 'era', discovery: 'discovery', error: 'error', info: 'dim', result: '', event: '' };
+const LOG_CLASS = { alert: 'alert', era: 'era', discovery: 'discovery', error: 'error', info: 'dim', result: '', event: '', season: 'season' };
 function logLines(lines) {
   for (const l of lines) {
     let cls = LOG_CLASS[l.kind] ?? '';
-    if (l.kind === 'event' && /Famine|Unrest|died|did not come back|raid|hard winter|dry season/i.test(l.text)) cls = 'bad';
+    if (l.kind === 'event' && l.tone) cls = l.tone;
     ui.log(l.text, cls, state.turn);
     if (l.kind === 'discovery' || l.kind === 'era') ui.banner(l.text.split('. ')[0].replace(/\.$/, ''));
   }
@@ -52,7 +53,8 @@ function logLines(lines) {
 function refresh(kind, extra = {}) {
   saveGame(state);
   ui.update(state, extra.quiet ? null : prevSnap);
-  map.setState(state);
+  const season = game.calendar(state, data).season;
+  map.setState(state, { tint: season.tint, cold: !!season.cold });
   if (kind === 'build' && extra.id) map.pulse(extra.id);
   prevSnap = snapshot(state);
   $('pix').setAttribute('aria-label', game.mapSummary(state, data));
@@ -110,7 +112,7 @@ const actions = {
       : 'This browser is blocking storage, so the save is held in memory only and will be lost when you close the page.', persisted ? 'good' : 'bad', state.turn);
   },
   load() {
-    const saved = loadGame();
+    const saved = loadGame(data);
     if (!saved) { ui.log('No saved civilization found in this browser.', 'error', state.turn); return; }
     host.load();
     ui.log(`Loaded ${state.name}, turn ${state.turn}.`, 'good', state.turn);
@@ -134,7 +136,7 @@ const host = {
   setSpeed(name) { settings.speed = name; saveSettings(settings); if (consoleTerm) consoleTerm.setSpeed(name); },
   save: () => saveGame(state),
   load() {
-    const saved = loadGame();
+    const saved = loadGame(data);
     if (!saved) return null;
     state = saved;
     history.replaceState(null, '', '#seed=' + encodeURIComponent(state.seed));
@@ -226,7 +228,7 @@ function enterGame(loaded) {
 }
 
 function namePrompt() {
-  const saved = loadGame();
+  const saved = loadGame(data);
   if (window.matchMedia('(max-width: 640px)').matches) {
     startTerm.print('Note: Civ Terminal is best on a desktop or tablet. It will still run here.', 'dim');
   }

@@ -1,6 +1,6 @@
 // Saving to the browser's localStorage, with an in-memory fallback when
 // storage is blocked (private windows, strict settings).
-import { isValidSave } from './state.js';
+import { isValidSave, migrate } from './state.js';
 
 const SAVE_KEY = 'civ-terminal:save:v1';
 const SETTINGS_KEY = 'civ-terminal:settings:v1';
@@ -38,11 +38,12 @@ function remove(key) {
 // Returns true if the save reached localStorage, false if it is memory-only.
 export function saveGame(state) { return write(SAVE_KEY, JSON.stringify(state)); }
 
-export function loadGame() {
+// `data` lets saves from older builds be brought up to date.
+export function loadGame(data) {
   const raw = read(SAVE_KEY);
   if (!raw) return null;
   try {
-    const obj = JSON.parse(raw);
+    const obj = data ? migrate(JSON.parse(raw), data) : JSON.parse(raw);
     return isValidSave(obj) ? obj : null;
   } catch (e) {
     return null;

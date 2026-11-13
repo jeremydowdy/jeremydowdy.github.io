@@ -35,9 +35,18 @@
                 <h2 id="mapH" class="sr-only">Map</h2>
                 <div class="mapbox" id="mapbox">
                     <canvas id="pix" role="img" aria-label="Map"></canvas>
+                    <div id="clock" class="clock" aria-hidden="true"></div>
                     <div id="banner" class="banner" role="status" aria-live="polite"></div>
                 </div>
                 <p class="goal" id="goal"></p>
+
+                <section class="panel timeline" aria-labelledby="tlH">
+                    <h2 id="tlH">Timeline</h2>
+                    <canvas id="chart" role="img" aria-label="Chart of people and food over time"></canvas>
+                    <p class="legend" aria-hidden="true"><span class="key people"></span> people <span class="key food"></span> food <span class="key winter"></span> winter</p>
+                    <p class="hint" id="chartNote"></p>
+                    <ol class="tl" id="tlList"></ol>
+                </section>
             </section>
 
             <aside class="side" aria-label="Actions">
@@ -64,11 +73,6 @@
                     <h2 id="rivH">Rivals</h2>
                     <div id="rivalList"></div>
                 </section>
-
-                <details class="panel more" id="histBox">
-                    <summary>History</summary>
-                    <ol class="hist" id="histList"></ol>
-                </details>
 
                 <details class="panel more" id="rulesBox">
                     <summary>The rules underneath</summary>

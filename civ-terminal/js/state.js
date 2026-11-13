@@ -1,7 +1,7 @@
 // The game state: one plain, JSON-serializable object.
 import { hashSeed } from './rng.js';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 export const NAME_PATTERN = /^[A-Za-z0-9 -]{1,24}$/;
 
 export function validateName(raw) {
@@ -26,8 +26,11 @@ export function createState({ name, seed, data }) {
     seed,
     rng: hashSeed(seed),
     turn: 1,
+    clock: { year: 1, step: 0 },   // the calendar: which year, and which season of it
     era: data.eras[0].id,
-    pop: rules.startPopulation,
+    pop: rules.startPopulation,   // adults: they forage, gather wood and learn
+    kids: 0,                      // children: they eat, but don't work until they grow up
+    cohorts: [],                  // children by birth turn, oldest first: { born, n }
     food: rules.startFood,
     energy: rules.startEnergy,
     knowledge: 0,
@@ -42,6 +45,7 @@ export function createState({ name, seed, data }) {
     resolved: [],
     pending: [],      // delayed consequences waiting for their turn
     history: [],      // { turn, kind, text }
+    timeline: [],     // one record per finished turn: the date, the numbers, births, deaths, departures
     dilemma: null,    // the decision currently waiting, if any
     nextArmsTurn: rules.firstArmsTurn,
     treaty: null,
@@ -52,6 +56,22 @@ export function createState({ name, seed, data }) {
     rulesModified: false,
     over: null,
   };
+}
+
+// Brings a save from an older build up to date, so players keep their game.
+export function migrate(obj, data) {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (obj.v === 2) {
+    const perYear = (data.eras.find((e) => e.id === obj.era) || data.eras[0]).clock?.perYear || 1;
+    obj.clock = { year: Math.floor((obj.turn - 1) / perYear) + 1, step: (obj.turn - 1) % perYear };
+    obj.kids = 0; obj.cohorts = []; obj.timeline = [];
+    obj.mods = { knowledgeMult: 1, ...obj.mods };
+    // New rules replace the old growth rules. Rules the player changed are kept.
+    const fresh = ruleValues(data.rules);
+    obj.rules = obj.rulesModified ? { ...fresh, ...Object.fromEntries(Object.entries(obj.rules).filter(([k]) => k in fresh)) } : fresh;
+    obj.v = 3;
+  }
+  return obj;
 }
 
 export function isValidSave(obj) {

@@ -2,7 +2,7 @@
 // of text ({ text, cls }), and anything that touches the page goes through
 // the `host` object passed in. That keeps the commands testable in Node.
 import * as game from './game.js';
-import { capacity, foodForecast } from './economy.js';
+import { capacity, forecast, people } from './economy.js';
 import { record } from './rivals.js';
 import { score } from './scoring.js';
 import { MOVES } from './gametheory/armsRace.js';
@@ -10,7 +10,7 @@ import { completeWord } from './terminal-complete.js';
 
 const THEMES = ['green', 'amber', 'white'];
 const SPEEDS = ['normal', 'instant', 'slow'];
-const COMMANDS = ['help', 'status', 'build', 'explore', 'decide', 'choose', 'rivals', 'propose', 'wait', 'history',
+const COMMANDS = ['help', 'status', 'build', 'explore', 'decide', 'choose', 'rivals', 'propose', 'wait', 'timeline', 'history',
   'reveal', 'set', 'map', 'seed', 'clear', 'save', 'load', 'reset'];
 
 const L = (text = '', cls = '') => ({ text, cls });
@@ -41,13 +41,14 @@ export function describeEffects(fx = {}) {
 function statusLines(state, data) {
   const era = game.eraOf(state, data);
   const cap = capacity(state, data);
-  const forecast = foodForecast(state, data);
+  const f = forecast(state, data);
+  const when = game.calendar(state, data);
   const goal = game.nextGoal(state, data);
   const built = Object.entries(state.structures).filter(([, n]) => n > 0).map(([id, n]) => `${id} x${n}`).join(', ') || 'none';
   const lines = [
-    L(`${state.name}: ${era.name}, turn ${state.turn}`, 'head'),
-    L(`  population  ${n0(state.pop)}   (shelter for ${cap})`),
-    L(`  food        ${n0(state.food)}   (${signed(forecast)} per turn in an average season)`),
+    L(`${state.name}: ${era.name}, ${when.label}, turn ${state.turn}`, 'head'),
+    L(`  population  ${people(state)}   (${state.pop} adults, ${state.kids} ${state.kids === 1 ? 'child' : 'children'}; room for ${cap}${people(state) > cap ? ', crowded' : ''})`),
+    L(`  food        ${n0(state.food)}   (${signed(f.food)} per turn${when.seasonal ? ' this ' + when.season.name.toLowerCase() : ''})`),
     L(`  energy      ${n0(state.energy)}`),
     L(`  knowledge   ${n1(state.knowledge)}` + (goal ? `   (next: ${goal.label} at ${goal.at})` : '')),
     L(`  stability   ${n0(state.stability)} / 100`),
@@ -133,6 +134,18 @@ function rivalsLines(state, data) {
   return lines;
 }
 
+function timelineLines(state, arg) {
+  const n = arg === 'all' ? state.timeline.length : 12;
+  const recs = state.timeline.slice(-n);
+  if (!recs.length) return [L('Nothing has happened yet. Type "wait" to let a turn pass.')];
+  const lines = [L(arg === 'all' || recs.length === state.timeline.length ? 'Timeline' : `Timeline (last ${recs.length} of ${state.timeline.length} turns; "timeline all" shows everything)`, 'head')];
+  for (const r of recs) {
+    const flow = [r.born ? `+${r.born} born` : '', r.died ? `-${r.died} died` : '', r.left ? `-${r.left} left` : ''].filter(Boolean).join(', ');
+    lines.push(L(`  turn ${String(r.turn).padStart(3)}  ${r.label.padEnd(16)} people ${String(r.pop + r.kids).padStart(3)}${flow ? ` (${flow})` : ''}  food ${n0(r.food)}`, r.left || r.died >= 3 ? '' : 'dim'));
+  }
+  return lines;
+}
+
 function historyLines(state, arg) {
   const all = arg === 'all';
   const items = all ? state.history : state.history.slice(-20);
@@ -188,6 +201,7 @@ const HELP = [
   ['choose <A|B>', 'pick an option'],
   ['rivals', "each rival's strategy, history with you and trust"],
   ['propose <treaty>', 'offer a deal; in this build: propose disarmament'],
+  ['timeline', 'what happened each turn: the date, births, deaths, people who left'],
   ['history', 'past decisions and the consequences that followed'],
   ['reveal rules', 'show the constants underneath; "set rule <name> <value>" changes one'],
   ['map', 'describe the map in words'],
@@ -229,6 +243,7 @@ export function createCommands({ data, host }) {
       case 'decide': return decideLines(state, data);
       case 'rivals': return rivalsLines(state, data);
       case 'history': return historyLines(state, arg);
+      case 'timeline': return timelineLines(state, arg);
       case 'map': return [L(game.mapSummary(state, data))];
       case 'seed': return [L(`Seed: ${state.seed}`), L(`Replay link: ${host.shareUrl(state.seed)}`),
         L('The same seed and the same choices always give the same score.' + (state.rulesModified ? ' (This run has changed rules.)' : ''), 'dim')];
@@ -336,7 +351,7 @@ export function createCommands({ data, host }) {
       if (done.length === 1) {
         candidates = {
           build: game.availableStructures(state, data).map((s) => s.id), explore: (data.expeditions || []).map((e) => e.id), choose: ['A', 'B'], propose: game.TREATIES,
-          reveal: ['rules'], set: ['theme', 'speed', 'rule'], history: ['all'], reset: ['confirm'],
+          reveal: ['rules'], set: ['theme', 'speed', 'rule'], history: ['all'], timeline: ['all'], reset: ['confirm'],
         }[c] || [];
       } else if (done.length === 2 && c === 'set') {
         candidates = { theme: THEMES, speed: SPEEDS, rule: Object.keys(state.rules) }[a] || [];

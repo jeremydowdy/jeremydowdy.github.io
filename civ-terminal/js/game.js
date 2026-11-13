@@ -1,6 +1,6 @@
 // Game actions. Everything here is pure logic on the state object, so it
 // runs the same in the browser and in the tests.
-import { tick, applyEffects, capacity } from './economy.js';
+import { tick, applyEffects, capacity, clockInfo, people } from './economy.js';
 import { dueDilemma } from './dilemmas.js';
 import * as armsRace from './gametheory/armsRace.js';
 import { rivalMove, treatyAccepted, updateTrust } from './rivals.js';
@@ -14,6 +14,7 @@ export function newGame(name, seed, data) {
 }
 
 export const eraOf = (state, data) => data.eras.find((e) => e.id === state.era);
+export const calendar = clockInfo;
 
 const eraIndex = (data, id) => data.eras.findIndex((e) => e.id === id);
 
@@ -118,8 +119,13 @@ export function advance(state, data, n = 1) {
     if (state.over) { lines.push({ kind: 'alert', text: 'This civilization has ended. Type "reset" to start again.' }); break; }
     if (state.dilemma) { lines.push({ kind: 'alert', text: 'A decision is waiting. Type "decide" to read it, then "choose A" or "choose B".' }); break; }
     const turn = state.turn;
-    for (const e of tick(state, data)) lines.push({ kind: 'event', text: `Turn ${turn}: ${e}` });
+    const before = clockInfo(state, data);
+    for (const e of tick(state, data)) lines.push({ kind: 'event', tone: e.tone, text: `Turn ${turn} (${before.label}): ${e.text}` });
     done += 1;
+    const after = clockInfo(state, data);
+    if (after.seasonal && !state.over && after.season.name !== before.season.name) {
+      lines.push({ kind: 'season', text: `${after.season.name} begins. ${after.season.note || ''}`.trim() });
+    }
     trigger(state, data, lines);
     if (state.dilemma || state.over) break;
   }
@@ -187,7 +193,7 @@ export function choose(state, data, key) {
     state.resolved.push(card.id);
     state.history.push({ turn: state.turn, kind: 'decision', text: `${card.title}: you chose "${opt.label}".` });
     lines.push({ kind: 'result', text: `Decided: ${opt.label}.` });
-    if ((opt.later || []).length) lines.push({ kind: 'info', text: 'Some consequences will take time to arrive. They will show up in "history".' });
+    if ((opt.later || []).length) lines.push({ kind: 'info', text: 'Some consequences will take time to arrive. They will show up in the timeline.' });
     if ((opt.locks || []).length) lines.push({ kind: 'info', text: 'This choice closes off some future options.' });
   }
   state.dilemma = null;
@@ -288,7 +294,9 @@ export function mapSummary(state, data) {
     .map(([id, n]) => `${n} ${data.structures.find((x) => x.id === id).name.toLowerCase()}${n === 1 ? '' : 's'}`);
   const built = parts.length ? parts.join(', ') : 'nothing built yet';
   const away = state.parties.length ? ` A party of ${state.parties[0].people} is away on an expedition.` : '';
+  const when = clockInfo(state, data);
+  const kids = state.kids ? `, and ${state.kids} ${state.kids === 1 ? 'child' : 'children'}` : '';
   return `Map: a pixel-art river valley. A blue river winds from top to bottom through green grassland, with forest and hills away from the water. ` +
-    `${state.name}'s camp sits on the bank with ${built}. ${state.pop} ${state.pop === 1 ? 'settler walks' : 'settlers walk'} between the camp, the river and the foraging grounds.${away} ` +
-    `${era.name}, turn ${state.turn}. Shelter for ${capacity(state, data)}.` + (state.flags.weir ? ' A stone weir crosses the river.' : '');
+    `${state.name}'s camp sits on the bank with ${built}. ${state.pop} ${state.pop === 1 ? 'adult walks' : 'adults walk'} between the camp, the river and the foraging grounds${kids}.${away} ` +
+    `${era.name}, ${when.label}, turn ${state.turn}. Room for ${capacity(state, data)} people; ${people(state)} live here.` + (when.season.cold ? ' It is winter, and the ground is pale.' : '') + (state.flags.weir ? ' A stone weir crosses the river.' : '');
 }

@@ -3,7 +3,7 @@
 // hands every click to `actions`; it never changes the state itself.
 import * as game from './game.js';
 import { describeEffects } from './commands.js';
-import { forecast, capacity } from './economy.js';
+import { forecast, capacity, people } from './economy.js';
 import { score } from './scoring.js';
 import { record } from './rivals.js';
 import { MOVES } from './gametheory/armsRace.js';
@@ -48,10 +48,11 @@ export function createUI({ data, actions, reducedMotion = false }) {
     const li = h('li', { class: 'chip', style: `--c:${c.color}`, 'data-chip': c.key });
     const val = h('div', { class: 'val' });
     const sub = h('div', { class: 'sub' });
+    const sub2 = h('div', { class: 'sub' });
     const bar = h('div', { class: 'bar', hidden: !(c.key === 'knowledge' || c.key === 'stability'), 'aria-hidden': 'true' }, h('i'));
-    li.append(h('div', { class: 'label' }, c.label), val, sub, bar);
+    li.append(h('div', { class: 'label' }, c.label), val, sub, sub2, bar);
     chipList.append(li);
-    chipEls[c.key] = { li, val, sub, bar: bar.firstChild, barBox: bar };
+    chipEls[c.key] = { li, val, sub, sub2, bar: bar.firstChild, barBox: bar };
   }
 
   function showDelta(key, diff) {
@@ -71,24 +72,29 @@ export function createUI({ data, actions, reducedMotion = false }) {
     const cap = capacity(state, data);
     const goal = game.nextGoal(state, data);
     const away = state.parties.reduce((n, p) => n + p.people, 0);
-    chipEls.pop.val.textContent = n0(state.pop);
-    chipEls.pop.sub.textContent = `shelter for ${cap}` + (away ? `, ${away} away` : '');
+    const when = game.calendar(state, data);
+    const crowded = people(state) > cap;
+    chipEls.pop.val.textContent = n0(people(state));
+    chipEls.pop.sub.textContent = `${state.pop} adults, ${state.kids} ${state.kids === 1 ? 'child' : 'kids'}` + (away ? `, ${away} away` : '');
+    chipEls.pop.sub2.replaceChildren(h('span', { class: crowded ? 'down' : '' }, crowded ? `crowded: room for ${cap}` : `room for ${cap}`));
     chipEls.food.val.textContent = n0(state.food);
     chipEls.food.sub.replaceChildren(h('span', { class: f.food >= 0 ? 'up' : 'down' }, perTurn(f.food)), ' per turn');
+    chipEls.food.sub2.replaceChildren(when.seasonal ? h('span', { class: when.season.cold ? 'down' : '' }, `${when.season.name}: foraging ${Math.round((when.season.forage ?? 1) * 100)}%`) : '');
     chipEls.energy.val.textContent = n0(state.energy);
     chipEls.energy.sub.replaceChildren(h('span', { class: f.energy >= 0 ? 'up' : 'down' }, perTurn(f.energy)), ' per turn');
     chipEls.knowledge.val.textContent = n1(state.knowledge);
     chipEls.knowledge.sub.replaceChildren(h('span', { class: f.knowledge >= 0 ? 'up' : 'down' }, perTurn(f.knowledge)), ' per turn');
     chipEls.knowledge.bar.style.width = goal ? Math.min(100, (state.knowledge / goal.at) * 100) + '%' : '100%';
     chipEls.stability.val.textContent = n0(state.stability);
-    chipEls.stability.sub.textContent = state.stability < state.rules.unrestThreshold ? 'unrest: people are leaving' : 'out of 100';
+    chipEls.stability.sub.textContent = state.stability < state.rules.unrestThreshold ? 'unrest: people may leave' : 'out of 100';
     chipEls.stability.bar.style.width = state.stability + '%';
     for (const c of CHIPS) {
-      chipEls[c.key].li.setAttribute('aria-label', `${c.label} ${chipEls[c.key].val.textContent}, ${chipEls[c.key].sub.textContent}`);
+      const e = chipEls[c.key];
+      e.li.setAttribute('aria-label', `${c.label} ${e.val.textContent}, ${e.sub.textContent}${e.sub2.textContent ? ', ' + e.sub2.textContent : ''}`);
     }
     if (prev) {
       for (const key of ['pop', 'food', 'energy', 'knowledge', 'stability']) {
-        const diff = state[key] - prev[key];
+        const diff = (key === 'pop' ? people(state) : state[key]) - prev[key];
         if (Math.abs(diff) >= (key === 'pop' ? 1 : 0.5)) showDelta(key, diff);
       }
     }
@@ -171,11 +177,81 @@ export function createUI({ data, actions, reducedMotion = false }) {
   }
 
   // ---------------------------------------------------------------- history and rules
-  function updateHistory(state) {
-    const list = $('histList');
+  // ---------------------------------------------------------------- timeline
+  const CHART = { w: 300, h: 80, pad: 4, window: 60 };
+
+  // A small pixel chart of the last turns: people and food, with winters shaded.
+  function drawChart(state) {
+    const c = $('chart');
+    c.width = CHART.w; c.height = CHART.h;
+    const g = c.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    g.fillStyle = '#070b12'; g.fillRect(0, 0, CHART.w, CHART.h);
+    const recs = state.timeline.slice(-CHART.window);
+    const note = $('chartNote');
+    if (recs.length < 2) {
+      g.fillStyle = '#9fb0c8'; g.font = '10px monospace'; g.fillText('The chart fills in as turns pass.', 10, CHART.h / 2 + 3);
+      note.textContent = 'Nothing to chart yet. Press Next turn.';
+      c.setAttribute('aria-label', 'Chart of people and food over time. Nothing to show yet.');
+      return;
+    }
+    const n = recs.length, span = CHART.w - CHART.pad * 2, colW = Math.max(2, span / (n - 1));
+    const x = (i) => Math.round(CHART.pad + (i * span) / (n - 1));
+    recs.forEach((r, i) => { if (r.cold) { g.fillStyle = '#16233b'; g.fillRect(Math.round(x(i) - colW / 2), 0, Math.ceil(colW), CHART.h); } });
+    // Hard-edged pixel lines (Bresenham), so the chart matches the rest of the game.
+    const pixelLine = (x0, y0, x1, y1) => {
+      const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+      let err = dx + dy;
+      for (;;) {
+        g.fillRect(x0, y0, 1, 1);
+        if (x0 === x1 && y0 === y1) break;
+        const e2 = 2 * err;
+        if (e2 >= dy) { err += dy; x0 += sx; }
+        if (e2 <= dx) { err += dx; y0 += sy; }
+      }
+    };
+    const series = (get, color) => {
+      const vals = recs.map(get), max = Math.max(1, ...vals) * 1.1;
+      const y = (v) => Math.round(CHART.h - 5 - (v / max) * (CHART.h - 10));
+      g.fillStyle = color;
+      for (let i = 1; i < n; i++) pixelLine(x(i - 1), y(vals[i - 1]), x(i), y(vals[i]));
+      g.fillRect(x(n - 1) - 1, y(vals[n - 1]) - 1, 3, 3);
+    };
+    series((r) => r.food, '#ffb347');
+    series((r) => r.pop + r.kids, '#e8ecf2');
+    const ppl = recs.map((r) => r.pop + r.kids), food = recs.map((r) => Math.round(r.food));
+    const text = `Last ${n} turns. People: ${ppl[0]} to ${ppl[n - 1]} (low ${Math.min(...ppl)}, high ${Math.max(...ppl)}). Food: ${food[0]} to ${food[n - 1]} (low ${Math.min(...food)}, high ${Math.max(...food)}).`;
+    note.textContent = text;
+    c.setAttribute('aria-label', 'Chart of people and food over time. ' + text);
+  }
+
+  function turnRow(rec, notes, now) {
+    const flow = [];
+    if (rec.born) flow.push(h('span', { class: 'good' }, `+${rec.born} born`));
+    if (rec.died) flow.push(h('span', { class: 'bad' }, `-${rec.died} died`));
+    if (rec.left) flow.push(h('span', { class: 'bad' }, `-${rec.left} left`));
+    const stats = now ? null : h('div', { class: 'tstats' },
+      `people ${rec.pop + rec.kids}`, rec.kids ? ` (${rec.kids} kids)` : '', flow.length ? ' ' : '', flow.flatMap((f, i) => (i ? [', ', f] : [f])),
+      ` \u00B7 food ${n0(rec.food)} \u00B7 knowledge ${n1(rec.knowledge)}`);
+    return h('li', { class: 'trow' + (rec.cold ? ' cold' : '') + (rec.left || rec.died >= 3 ? ' rough' : '') + (now ? ' now' : '') },
+      h('div', { class: 'thead' }, h('b', {}, rec.label), h('span', {}, now ? `turn ${rec.turn}, now` : `turn ${rec.turn}`)),
+      stats,
+      notes.length ? h('ul', { class: 'tnotes' }, notes.map((t) => h('li', {}, t))) : null);
+  }
+
+  function updateTimeline(state) {
+    drawChart(state);
+    const byTurn = new Map();
+    for (const e of state.history) {
+      if (e.kind === 'start') continue;
+      if (!byTurn.has(e.turn)) byTurn.set(e.turn, []);
+      byTurn.get(e.turn).push(e.text);
+    }
+    const list = $('tlList');
     list.replaceChildren();
-    for (const e of state.history.slice(-40).reverse()) list.append(h('li', {}, h('b', {}, `T${e.turn} `), e.text));
-    if (state.pending.length) list.prepend(h('li', {}, `${state.pending.length} consequence${state.pending.length === 1 ? ' is' : 's are'} still on the way.`));
+    const when = game.calendar(state, data);
+    list.append(turnRow({ turn: state.turn, label: when.label, cold: !!when.season.cold }, byTurn.get(state.turn) || [], true));
+    for (const rec of state.timeline.slice(-40).reverse()) list.append(turnRow(rec, byTurn.get(rec.turn) || [], false));
   }
 
   function updateRules(state) {
@@ -289,14 +365,17 @@ export function createUI({ data, actions, reducedMotion = false }) {
     const focusKey = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.key : null;
     $('gName').textContent = state.name;
     $('gEra').textContent = game.eraOf(state, data).name;
-    $('gTurn').textContent = `turn ${state.turn}`;
+    const when = game.calendar(state, data);
+    $('gTurn').textContent = `${when.label} \u00B7 turn ${state.turn}`;
+    $('clock').textContent = when.label;
+    $('clock').classList.toggle('cold', !!when.season.cold);
     $('gScore').textContent = String(score(state)) + (state.rulesModified ? ' (rules changed)' : '');
     $('gSeed').textContent = state.seed;
     updateChips(state, prev);
     updateBuild(state);
     updateExpeditions(state);
     updateRivals(state);
-    updateHistory(state);
+    updateTimeline(state);
     updateRules(state);
     updateTime(state);
     updateDecision(state);

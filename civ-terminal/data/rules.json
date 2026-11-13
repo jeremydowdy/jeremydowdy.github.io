@@ -31,17 +31,81 @@
     "value": 0.04,
     "label": "Share of stored food lost per turn"
   },
-  "growthRate": {
-    "value": 0.06,
-    "label": "Population growth per turn when fed and sheltered"
-  },
-  "growthReserve": {
-    "value": 2,
-    "label": "Turns of food in store needed before the population grows"
-  },
   "baseCapacity": {
-    "value": 16,
-    "label": "People who can live without built shelter"
+    "value": 20,
+    "label": "People the camp holds without built shelter"
+  },
+  "birthRate": {
+    "value": 0.1,
+    "label": "Births per adult per turn when well fed and not crowded"
+  },
+  "birthFoodTurns": {
+    "value": 3,
+    "label": "Turns of stored food needed for full fertility (less food, fewer births)"
+  },
+  "crowdBirthDrop": {
+    "value": 2,
+    "label": "How sharply births fall when the camp is over capacity"
+  },
+  "deathRate": {
+    "value": 0.012,
+    "label": "Chance an adult dies each turn (illness, accidents, age)"
+  },
+  "childDeathRate": {
+    "value": 0.018,
+    "label": "Chance a child dies each turn"
+  },
+  "childVulnerability": {
+    "value": 1.6,
+    "label": "How much harder famine hits children than adults"
+  },
+  "childEat": {
+    "value": 0.5,
+    "label": "Food a child eats per turn (children don't forage or learn yet)"
+  },
+  "matureTurns": {
+    "value": 12,
+    "label": "Turns until a child grows up and starts working"
+  },
+  "hungerTurns": {
+    "value": 2,
+    "label": "Below this many turns of stored food, people get anxious"
+  },
+  "hungerUnrest": {
+    "value": 4,
+    "label": "Stability lost per turn at zero stored food"
+  },
+  "crowdUnrest": {
+    "value": 0.6,
+    "label": "Stability lost per turn for each 10% the camp is over capacity"
+  },
+  "contentTurns": {
+    "value": 4,
+    "label": "Turns of stored food that make people feel secure"
+  },
+  "contentment": {
+    "value": 0.5,
+    "label": "Stability gained per turn when secure and not crowded"
+  },
+  "leaveRate": {
+    "value": 0.3,
+    "label": "Share of adults who leave per turn at zero stability"
+  },
+  "minStay": {
+    "value": 3,
+    "label": "Adults who always stay, however unhappy"
+  },
+  "leaveFoodShare": {
+    "value": 1,
+    "label": "Share of stored food that leavers take (1 = their fair share)"
+  },
+  "leaveKnowledge": {
+    "value": 1.2,
+    "label": "Knowledge leavers take, as a multiple of their share of the people"
+  },
+  "leaveRelief": {
+    "value": 5,
+    "label": "Stability regained when the unhappy ones are gone"
   },
   "starvationRate": {
     "value": 0.5,
@@ -72,8 +136,8 @@
     "label": "How fast stability drifts back toward rest"
   },
   "unrestThreshold": {
-    "value": 20,
-    "label": "Below this stability, people start leaving"
+    "value": 35,
+    "label": "Below this stability, people start leaving (the lower it is, the more go)"
   },
   "armsRaceInterval": {
     "value": 8,
