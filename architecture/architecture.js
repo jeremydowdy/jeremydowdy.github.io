@@ -546,6 +546,12 @@
             if (flowPlaying) pauseFlow(); else playFlow();
         });
         document.addEventListener("keydown", onKeydown);
+        // Follow hash changes after load (back/forward, or a link to #node on this page).
+        window.addEventListener("hashchange", function () {
+            var id = decodeURIComponent(location.hash.replace(/^#/, ""));
+            if (nodesById[id]) { if (id !== selectedId) select(id, false); }
+            else if (selectedId) overview(false);
+        });
         (NARROW.addEventListener ? NARROW.addEventListener("change", applyNarrow) : NARROW.addListener(applyNarrow));
         (REDUCED.addEventListener ? REDUCED.addEventListener("change", function () {
             if (REDUCED.matches) stopFlow(); else updateAnimButton();
