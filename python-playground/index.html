@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Playground | Jeremy Dowdy</title>
+    <meta name="description" content="Learn Python basics in your browser: five short guided lessons with a code editor, instant feedback and nothing to install.">
+    <link rel="stylesheet" href="../assets/learn.css">
+    <link rel="stylesheet" href="playground.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to the playground</a>
+
+    <header class="site-header">
+        <a class="home" href="../">Jeremy Dowdy</a>
+        <h1>Python Playground</h1>
+        <p>Learn the basics by writing real Python, right in your browser. Nothing to install.</p>
+        <nav class="page-nav" aria-label="Python pages">
+            <a href="../">Home</a>
+            <a href="./" aria-current="page">Playground</a>
+            <a href="../python-cheat-sheet/">Cheat sheet</a>
+        </nav>
+    </header>
+
+    <main id="main" class="panel pg">
+        <div class="pg-status" id="status" role="status">
+            <span class="spinner" aria-hidden="true"></span>
+            <span id="statusText">Loading Python… the first visit downloads about 10 MB.</span>
+            <button type="button" class="link-btn" id="retryBtn" hidden>Try again</button>
+        </div>
+
+        <nav class="lesson-tabs" aria-label="Lessons">
+            <ol id="lessonList"></ol>
+        </nav>
+
+        <div class="pg-grid">
+            <article class="lesson" aria-labelledby="lessonTitle">
+                <p class="eyebrow" id="lessonNum">Lesson 1 of 5</p>
+                <h2 id="lessonTitle">Variables and types</h2>
+                <div id="lessonIntro"></div>
+                <div class="task">
+                    <h3>Your task</h3>
+                    <div id="lessonTask"></div>
+                </div>
+                <p class="cheat-link">Need a reminder of the syntax? <a id="cheatLink" href="../python-cheat-sheet/">Open the Python cheat sheet</a></p>
+            </article>
+
+            <div class="workbench">
+                <div class="code-box">
+                    <div class="box-bar">
+                        <span>main.py</span>
+                        <span class="kbd-hint">Ctrl/⌘ + Enter to run</span>
+                    </div>
+                    <div id="editor"></div>
+                </div>
+
+                <div class="actions">
+                    <button type="button" class="btn btn-primary" id="runBtn" disabled>▶ Run</button>
+                    <button type="button" class="btn btn-accent" id="checkBtn" disabled>✓ Check</button>
+                    <button type="button" class="btn" id="resetBtn">↺ Reset</button>
+                </div>
+
+                <div class="result" id="result" role="status" aria-live="polite" hidden></div>
+
+                <div class="code-box">
+                    <div class="box-bar">
+                        <span>Output</span>
+                        <button type="button" class="link-btn" id="clearBtn">Clear</button>
+                    </div>
+                    <pre id="output" tabindex="0" aria-label="Program output"><span class="out-faint">Press Run to see what your code prints.</span></pre>
+                </div>
+
+                <div class="lesson-nav">
+                    <button type="button" class="btn" id="prevBtn">← Previous</button>
+                    <button type="button" class="btn" id="nextBtn">Next lesson →</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        POWERED BY
+        <div class="footer-tech">
+            HTML &bull; CSS &bull; JavaScript &bull; Pyodide
+        </div>
+        <a href="https://claude.com" target="_blank" rel="noopener noreferrer" class="ai-credit-badge">
+            <span class="ai-credit-icon">✦</span> Development assisted by Claude
+        </a>
+    </footer>
+
+    <script src="vendor/codemirror.min.js"></script>
+    <script src="lessons.js"></script>
+    <script src="playground.js"></script>
+</body>
+</html>
