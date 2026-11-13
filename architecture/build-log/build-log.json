@@ -204,6 +204,22 @@
         "commit": "96ba609",
         "live": null
       }
+    },
+    {
+      "id": "build-log-page",
+      "date": "2026-11-13",
+      "title": "Published this build log",
+      "tried": "Kept the log in build-log.json from the start of the architecture work, adding an entry after each commit. The timeline page is static HTML generated from that file by architecture/tools/build.py, so it reads the same with or without JavaScript, and each component tag links back to the diagram. Also added an Architecture & Build Log link to the home page's Published list.",
+      "broke": null,
+      "fixed": null,
+      "note": "The <pre> indentation fix recorded in the architecture entry was in the same script that generates this page, so this page needed no separate fix.",
+      "components": [
+        "hosting"
+      ],
+      "shipped": {
+        "commit": "6a99daa",
+        "live": null
+      }
     }
   ]
 }
