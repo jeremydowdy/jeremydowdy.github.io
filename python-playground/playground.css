@@ -5,6 +5,7 @@
 /* Loading / ready status */
 .pg-status {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
     font-size: 0.88em;
@@ -34,6 +35,8 @@
 }
 .pg-status.is-error .spinner { background-color: var(--error); box-shadow: 0 0 8px var(--error); }
 .pg-status.is-error { color: #ffd0d8; }
+/* The error can include a long URL; let it wrap instead of widening the page */
+#statusText { min-width: 0; flex: 1 1 200px; overflow-wrap: anywhere; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 

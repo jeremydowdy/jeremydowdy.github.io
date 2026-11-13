@@ -50,6 +50,8 @@
     color: #ffffff;
 }
 
+.code-block pre:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
 .copy-btn {
     flex-shrink: 0;
     font-family: inherit;

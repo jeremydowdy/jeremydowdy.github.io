@@ -211,7 +211,7 @@ def lesson_link(lesson):
 def block(caption, code):
     return (f'<figure class="code-block">\n'
             f'<figcaption>{html.escape(caption)}</figcaption>\n'
-            f'<pre><code>{html.escape(code)}</code></pre>\n'
+            f'<pre tabindex="0"><code>{html.escape(code)}</code></pre>\n'
             f'</figure>')
 
 if sys.argv[1] == "test":

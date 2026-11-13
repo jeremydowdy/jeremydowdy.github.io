@@ -2,10 +2,10 @@
    Mirrors the look of the main site's index.html. */
 :root {
     --text: #f4f4f4;
-    --muted: rgba(255, 255, 255, 0.7);
-    --faint: rgba(255, 255, 255, 0.55);
+    --muted: rgba(255, 255, 255, 0.85);
+    --faint: rgba(255, 255, 255, 0.75);
     --accent: #00ff66;
-    --panel: rgba(0, 0, 0, 0.35);
+    --panel: rgba(0, 0, 0, 0.6);
     --panel-strong: rgba(0, 0, 0, 0.55);
     --inner: rgba(255, 255, 255, 0.05);
     --border: rgba(255, 255, 255, 0.15);
@@ -69,7 +69,11 @@ a { color: var(--accent); }
 }
 
 .site-header .home {
-    color: rgba(255, 255, 255, 0.85);
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.35);
+    color: #ffffff;
     text-decoration: none;
     font-size: 1em;
     font-weight: 500;
@@ -86,7 +90,11 @@ a { color: var(--accent); }
 }
 
 .site-header p {
-    color: #e0e0e0;
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.35);
+    color: #f0f0f0;
     font-size: 1.1em;
     margin: 0;
     font-weight: 400;
@@ -104,7 +112,7 @@ a { color: var(--accent); }
 .page-nav a {
     display: inline-block;
     padding: 9px 22px;
-    background-color: rgba(255, 255, 255, 0.12);
+    background-color: rgba(0, 0, 0, 0.55);
     color: #ffffff;
     text-decoration: none;
     font-weight: 500;
@@ -116,9 +124,10 @@ a { color: var(--accent); }
     -webkit-backdrop-filter: blur(5px);
 }
 .page-nav a:hover,
-.page-nav a:focus-visible { background-color: rgba(255, 255, 255, 0.28); outline: none; }
+.page-nav a:focus-visible { background-color: rgba(40, 40, 40, 0.8); outline: none; }
+.page-nav a:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
 .page-nav a[aria-current="page"] {
-    background-color: rgba(0, 255, 102, 0.15);
+    background-color: rgba(0, 60, 25, 0.75);
     border-color: var(--accent);
 }
 
