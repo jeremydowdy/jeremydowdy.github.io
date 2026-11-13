@@ -394,7 +394,7 @@
         }
         if (n.todo) {
             var todo = h("p", { "class": "todo" });
-            todo.appendChild(h("strong", {}, "TODO: "));
+            todo.appendChild(h("strong", {}, "Note to self: "));
             todo.appendChild(document.createTextNode(n.todo));
             dec.appendChild(todo);
         }

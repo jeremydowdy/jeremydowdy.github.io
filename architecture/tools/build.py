@@ -148,7 +148,7 @@ def render_text_version(arch, log):
             out.extend(f"        <li>{e(t)}</li>" for t in n["tradeoffs"])
             out.append("    </ul>")
         if n.get("todo"):
-            out.append(f'    <p class="todo"><strong>TODO:</strong> {e(n["todo"])}</p>')
+            out.append(f'    <p class="todo"><strong>Note to self:</strong> {e(n["todo"])}</p>')
         if n.get("link"):
             out.append(f'    <p><a href="{e(n["link"]["href"])}">{e(n["link"]["label"])}</a></p>')
         if n.get("buildLog"):
