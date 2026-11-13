@@ -31,7 +31,9 @@ export function syncCount(sim, count, sites) {
   sim.agents.length = n;
 }
 
-export function step(sim, dt, sites) {
+// `constrain(agent)` may nudge an agent that wandered somewhere it can't be
+// (for example into the river).
+export function step(sim, dt, sites, constrain) {
   const A = sim.agents, n = A.length;
   dt = Math.min(dt, 0.05);
   for (let i = 0; i < n; i++) {
@@ -72,5 +74,6 @@ export function step(sim, dt, sites) {
   for (const a of A) {
     a.x = Math.min(0.99, Math.max(0.01, a.x + a.vx * dt));
     a.y = Math.min(0.99, Math.max(0.01, a.y + a.vy * dt));
+    if (constrain) constrain(a);
   }
 }

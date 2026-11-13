@@ -1,0 +1,33 @@
+[
+  {
+    "id": "scout-hills",
+    "name": "Scout the hills",
+    "text": "Two hunters climb the ridge to see what lies beyond the valley.",
+    "people": 2,
+    "turns": 3,
+    "cost": { "food": 4 },
+    "reward": { "knowledge": 1 },
+    "risk": 0.1,
+    "mishap": "One of the party did not come back.",
+    "finds": [
+      { "chance": 0.3, "text": "They found a berry thicket on the way home.", "effects": { "food": 8 } }
+    ],
+    "minKnowledge": 0
+  },
+  {
+    "id": "follow-river",
+    "name": "Follow the river",
+    "text": "Three travelers follow the river downstream, toward the River Clan's grounds.",
+    "people": 3,
+    "turns": 5,
+    "cost": { "food": 7 },
+    "reward": { "knowledge": 1 },
+    "risk": 0.15,
+    "mishap": "One of the party did not come back.",
+    "finds": [
+      { "chance": 0.4, "text": "The River Clan traded news with them, and trust grew.", "effects": { "trust": 4 } },
+      { "chance": 0.25, "text": "They found a stand of fruit trees.", "effects": { "food": 10 } }
+    ],
+    "minKnowledge": 6
+  }
+]

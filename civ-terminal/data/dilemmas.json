@@ -2,7 +2,7 @@
   {
     "id": "shared-store",
     "era": "stone",
-    "minTurn": 4,
+    "minTurn": 7,
     "title": "The shared store",
     "text": "The band has more dried food than anyone can carry. Some want one guarded store for everyone. Others want each household to keep its own.",
     "options": {
@@ -10,22 +10,49 @@
         "label": "Pool the food in one guarded store",
         "upside": "Far less food spoils, and a bad season is shared by all.",
         "cost": "Whoever guards the store decides who eats. Power gathers there.",
-        "now": { "mods": { "spoilMult": -0.5, "stabilityPerTurn": -0.15 } },
+        "now": {
+          "mods": {
+            "spoilMult": -0.5,
+            "stabilityPerTurn": -0.15
+          }
+        },
         "later": [
-          { "after": 8, "text": "The keepers of the store have begun taking the first share.", "effects": { "stability": -4 } }
+          {
+            "after": 8,
+            "text": "The keepers of the store have begun taking the first share.",
+            "effects": {
+              "stability": -4
+            }
+          }
         ],
-        "flags": ["central_store"],
+        "flags": [
+          "central_store"
+        ],
         "locks": []
       },
       "B": {
         "label": "Each household keeps its own",
         "upside": "No one holds the food over anyone else. Households stay equals.",
         "cost": "Scattered caches spoil faster, and a hard season hits some homes much harder.",
-        "now": { "stability": 3, "mods": { "stabilityPerTurn": 0.1, "spoilMult": 0.1 } },
+        "now": {
+          "stability": 3,
+          "mods": {
+            "stabilityPerTurn": 0.1,
+            "spoilMult": 0.1
+          }
+        },
         "later": [
-          { "after": 6, "text": "A hard winter. Some household caches ran out before the thaw.", "effects": { "food": -8 } }
+          {
+            "after": 6,
+            "text": "A hard winter. Some household caches ran out before the thaw.",
+            "effects": {
+              "food": -8
+            }
+          }
         ],
-        "flags": ["household_stores"],
+        "flags": [
+          "household_stores"
+        ],
         "locks": []
       }
     }
@@ -33,7 +60,7 @@
   {
     "id": "river-weir",
     "era": "stone",
-    "minTurn": 12,
+    "minTurn": 16,
     "title": "The river",
     "text": "A line of stones across the river would hold back water for the gathering grounds and trap fish at the camp. It would also change the river for everything, and everyone, downstream.",
     "options": {
@@ -41,22 +68,54 @@
         "label": "Build a stone weir across the river",
         "upside": "Stored water and a fish trap: steady food and easier work at the camp.",
         "cost": "Heavy labor now. Fish runs thin out, and the clan downstream notices.",
-        "now": { "food": -6, "energy": -12, "mods": { "foodPerTurn": 1.2, "energyPerTurn": 0.5 } },
+        "now": {
+          "food": -6,
+          "energy": -12,
+          "mods": {
+            "foodPerTurn": 1.2,
+            "energyPerTurn": 0.5
+          }
+        },
         "later": [
-          { "after": 10, "text": "Fewer fish are reaching the upstream pools, and the River Clan has seen the weir.", "effects": { "trust": -10, "mods": { "forageMult": -0.03 } } }
+          {
+            "after": 10,
+            "text": "Fewer fish are reaching the upstream pools, and the River Clan has seen the weir.",
+            "effects": {
+              "trust": -10,
+              "mods": {
+                "forageMult": -0.03
+              }
+            }
+          }
         ],
-        "flags": ["weir"],
+        "flags": [
+          "weir"
+        ],
         "locks": []
       },
       "B": {
         "label": "Leave the river free",
         "upside": "The fish runs stay strong, and the clan downstream has no complaint.",
         "cost": "No stored water. A dry season will hit the gathering grounds hard.",
-        "now": { "trust": 5, "mods": { "forageMult": 0.04 } },
+        "now": {
+          "trust": 5,
+          "mods": {
+            "forageMult": 0.04
+          }
+        },
         "later": [
-          { "after": 10, "text": "A dry season. With no stored water, the gathering grounds gave little.", "effects": { "food": -12, "stability": -2 } }
+          {
+            "after": 10,
+            "text": "A dry season. With no stored water, the gathering grounds gave little.",
+            "effects": {
+              "food": -12,
+              "stability": -2
+            }
+          }
         ],
-        "flags": ["free_river"],
+        "flags": [
+          "free_river"
+        ],
         "locks": []
       }
     }

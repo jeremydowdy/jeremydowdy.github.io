@@ -21,7 +21,7 @@ function setup() {
 test('every command in the spec answers, and unknown ones say so', () => {
   const { text } = setup();
   assert.match(text('choose A'), /Nothing to decide/);
-  for (const c of ['help', 'status', 'build', 'decide', 'rivals', 'history', 'reveal rules', 'map', 'seed', 'save', 'wait', 'wait 3']) {
+  for (const c of ['help', 'status', 'build', 'explore', 'decide', 'rivals', 'history', 'reveal rules', 'map', 'seed', 'save', 'wait', 'wait 3']) {
     assert.ok(text(c).length > 0, c);
     assert.ok(!text(c).startsWith('Unknown'), c);
   }
@@ -68,7 +68,7 @@ test('reset needs a second, explicit confirmation', () => {
 test('tab completion', () => {
   const { cmds } = setup();
   assert.equal(cmds.complete('sta').value, 'status ');
-  assert.equal(cmds.complete('build sh').value, 'build shelter ');
+  assert.equal(cmds.complete('build ca').value, 'build campfire ');
   assert.equal(cmds.complete('set th').value, 'set theme ');
   assert.equal(cmds.complete('set theme a').value, 'set theme amber ');
   assert.deepEqual(cmds.complete('s').options.sort(), ['save', 'seed', 'set', 'status']);

@@ -5,7 +5,7 @@ const SPEEDS = { instant: 0, normal: 16, slow: 45 };
 const MAX_LINES = 1500;
 
 export class Terminal {
-  constructor({ out, line, input, mirror, ps1 }) {
+  constructor({ out, line, input, mirror, ps1, captureClicks = true }) {
     this.out = out; this.line = line; this.input = input; this.mirror = mirror; this.ps1 = ps1;
     this.queue = []; this.timer = null; this.delay = SPEEDS.normal;
     this.history = []; this.hIndex = 0; this.draft = '';
@@ -17,14 +17,23 @@ export class Terminal {
     for (const ev of ['keyup', 'click', 'select', 'focus']) input.addEventListener(ev, () => this.renderInput());
     input.addEventListener('focus', () => line.classList.remove('blurred'));
     input.addEventListener('blur', () => line.classList.add('blurred'));
-    // Clicking anywhere focuses the input, unless the player is selecting text.
-    document.addEventListener('mouseup', (e) => {
-      if (e.target.closest('a')) return;
+    // On the start screen, clicking anywhere focuses the input (unless the
+    // player is selecting text). The console drawer turns this off and only
+    // reacts to clicks inside itself.
+    this.onMouseUp = (e) => {
+      if (e.target.closest('a, button')) return;
       const sel = window.getSelection();
       if (sel && !sel.isCollapsed) return;
       if (!input.disabled) input.focus({ preventScroll: true });
-    });
+    };
+    if (captureClicks) document.addEventListener('mouseup', this.onMouseUp);
     this.renderInput();
+  }
+
+  dispose() {
+    this.flush();
+    document.removeEventListener('mouseup', this.onMouseUp);
+    this.disableInput();
   }
 
   setSpeed(name) { if (name in SPEEDS) this.delay = SPEEDS[name]; }

@@ -11,7 +11,7 @@ const run = async (seed, pick, turns = 60, setup = () => {}) => {
   const s = game.newGame('Run', seed, data);
   setup(s);
   await play(game, s, data, turns, pick, (st) => {
-    if (st.turn % 5 === 0) { game.build(st, data, 'hearth'); game.build(st, data, 'shelter'); }
+    if (st.turn % 5 === 0) { game.build(st, data, 'campfire'); game.build(st, data, 'shelter'); }
   });
   return s;
 };
@@ -39,7 +39,7 @@ test('a run can be saved mid-game and continued to the same result', async () =>
   const restored = JSON.parse(JSON.stringify(half));
   assert.ok(isValidSave(restored));
   await play(game, restored, data, 50, () => 'A', (st) => {
-    if (st.turn % 5 === 0) { game.build(st, data, 'hearth'); game.build(st, data, 'shelter'); }
+    if (st.turn % 5 === 0) { game.build(st, data, 'campfire'); game.build(st, data, 'shelter'); }
   });
   assert.equal(score(restored), score(full));
 });
@@ -76,11 +76,11 @@ test('the economy: people need food and shelter', () => {
 test('building spends resources, and refuses when you cannot afford it', () => {
   const s = game.newGame('B', 'build', data);
   s.food = 100; s.energy = 100;
-  assert.ok(game.build(s, data, 'shelter').ok);
-  assert.equal(s.structures.shelter, 1);
-  assert.equal(s.food, 92); assert.equal(s.energy, 94);
+  assert.ok(game.build(s, data, 'campfire').ok);
+  assert.equal(s.structures.campfire, 1);
+  assert.equal(s.energy, 94); assert.equal(s.food, 100);
   s.energy = 0;
-  assert.equal(game.build(s, data, 'hearth').ok, false);
+  assert.equal(game.build(s, data, 'campfire').ok, false);
   assert.equal(game.build(s, data, 'factory').ok, false);
 });
 
@@ -109,7 +109,7 @@ test('a pledge to disarm is accepted at normal trust and broken pledges cost ext
 
 test('reaching the knowledge threshold ends the slice once, with a score', async () => {
   const s = game.newGame('K', 'know', data);
-  s.knowledge = 39.9; s.structures.hearth = 3;
+  s.knowledge = data.eras[0].advanceAt.knowledge - 0.1; s.structures.campfire = 3;
   const out = game.advance(s, data, 2);
   assert.ok(s.flags.eraReady);
   assert.equal(out.lines.filter((l) => l.kind === 'era').length, 1);

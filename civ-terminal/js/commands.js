@@ -10,7 +10,7 @@ import { completeWord } from './terminal-complete.js';
 
 const THEMES = ['green', 'amber', 'white'];
 const SPEEDS = ['normal', 'instant', 'slow'];
-const COMMANDS = ['help', 'status', 'build', 'decide', 'choose', 'rivals', 'propose', 'wait', 'history',
+const COMMANDS = ['help', 'status', 'build', 'explore', 'decide', 'choose', 'rivals', 'propose', 'wait', 'history',
   'reveal', 'set', 'map', 'seed', 'clear', 'save', 'load', 'reset'];
 
 const L = (text = '', cls = '') => ({ text, cls });
@@ -24,6 +24,7 @@ const MOD_LABELS = {
   knowledgePerTurn: (v) => `${signed(v)} knowledge per turn`,
   stabilityPerTurn: (v) => `${v > 0 ? '+' : ''}${Math.round(v * 100) / 100} stability per turn`,
   forageMult: (v) => `foraging ${signed(v * 100, 0)}%`,
+  knowledgeMult: (v) => `knowledge gain ${signed(v * 100, 0)}%`,
   spoilMult: (v) => `spoilage ${signed(v * 100, 0)}%`,
 };
 
@@ -41,18 +42,23 @@ function statusLines(state, data) {
   const era = game.eraOf(state, data);
   const cap = capacity(state, data);
   const forecast = foodForecast(state, data);
+  const goal = game.nextGoal(state, data);
   const built = Object.entries(state.structures).filter(([, n]) => n > 0).map(([id, n]) => `${id} x${n}`).join(', ') || 'none';
   const lines = [
     L(`${state.name}: ${era.name}, turn ${state.turn}`, 'head'),
     L(`  population  ${n0(state.pop)}   (shelter for ${cap})`),
     L(`  food        ${n0(state.food)}   (${signed(forecast)} per turn in an average season)`),
     L(`  energy      ${n0(state.energy)}`),
-    L(`  knowledge   ${n1(state.knowledge)}` + (era.advanceAt ? `   (the ${era.name} ends at ${era.advanceAt.knowledge})` : '')),
+    L(`  knowledge   ${n1(state.knowledge)}` + (goal ? `   (next: ${goal.label} at ${goal.at})` : '')),
     L(`  stability   ${n0(state.stability)} / 100`),
     L(`  arms        ${state.arms}`),
     L(`  structures  ${built}`),
     L(`  score       ${score(state)}` + (state.rulesModified ? '   (rules changed)' : '')),
   ];
+  if (state.parties.length) {
+    const p = state.parties[0];
+    lines.push(L(`  A party of ${p.people} is away; back in ${Math.max(1, p.due - state.turn + 1)} turns.`, 'dim'));
+  }
   if (state.treaty) lines.push(L('  A pledge to disarm stands until the next border decision.', 'dim'));
   if (state.dilemma) lines.push(L('  A decision is waiting. Type "decide".', 'alert'));
   if (state.over) lines.push(L('  This civilization has ended. Type "reset" to start again.', 'alert'));
@@ -152,12 +158,24 @@ function rulesLines(state, data) {
 }
 
 function buildListLines(state, data) {
-  const lines = [L('You can build:', 'head')];
-  for (const s of game.availableStructures(state, data)) {
+  const lines = [L('Build', 'head')];
+  for (const s of game.structureList(state, data)) {
     const cost = Object.entries(s.cost).map(([k, v]) => `${v} ${k}`).join(', ');
-    lines.push(L(`  ${s.id.padEnd(9)} ${cost.padEnd(20)} ${s.description}`));
+    if (!s.unlocked) lines.push(L(`  ${s.id.padEnd(12)} locked. ${s.lockedReason}`, 'dim'));
+    else lines.push(L(`  ${s.id.padEnd(12)} ${cost.padEnd(18)} ${s.description}`));
   }
-  lines.push(L(`You have ${n0(state.food)} food and ${n0(state.energy)} energy. Example: build shelter`, 'dim'));
+  lines.push(L(`You have ${n0(state.food)} food and ${n0(state.energy)} energy. Example: build campfire`, 'dim'));
+  return lines;
+}
+
+function exploreListLines(state, data) {
+  const lines = [L('Expeditions', 'head')];
+  for (const e of game.expeditionList(state, data)) {
+    const cost = Object.entries(e.cost).map(([k, v]) => `${v} ${k}`).join(', ');
+    lines.push(L(`  ${e.id.padEnd(13)} ${e.people} people, ${e.turns} turns, ${cost}; +${e.reward.knowledge || 0} knowledge`));
+    lines.push(L(`  ${''.padEnd(13)} ${e.blocked ? 'Not now: ' + e.blocked : e.text}`, 'dim'));
+  }
+  lines.push(L('Example: explore scout-hills', 'dim'));
   return lines;
 }
 
@@ -165,6 +183,7 @@ const HELP = [
   ['status', 'population, food, energy, knowledge, stability, era and turn'],
   ['wait [n]', 'let n turns pass (1 if you leave n out, 50 at most)'],
   ['build <structure>', 'spend resources on a structure; "build" alone lists them'],
+  ['explore <expedition>', 'send a party out to learn; "explore" alone lists them'],
   ['decide', 'read the decision that is waiting, with both options and their costs'],
   ['choose <A|B>', 'pick an option'],
   ['rivals', "each rival's strategy, history with you and trust"],
@@ -233,6 +252,13 @@ export function createCommands({ data, host }) {
         if (!arg) return buildListLines(state, data);
         const res = game.build(state, data, arg);
         if (res.ok) after('build', { id: res.structure.id });
+        return res.lines.map((l) => L(l.text, l.kind === 'error' ? 'error' : ''));
+      }
+
+      case 'explore': {
+        if (!arg) return exploreListLines(state, data);
+        const res = game.explore(state, data, arg);
+        if (res.ok) after('explore');
         return res.lines.map((l) => L(l.text, l.kind === 'error' ? 'error' : ''));
       }
 
@@ -309,7 +335,7 @@ export function createCommands({ data, host }) {
       const [c, a] = done.map((w) => w.toLowerCase());
       if (done.length === 1) {
         candidates = {
-          build: game.availableStructures(state, data).map((s) => s.id), choose: ['A', 'B'], propose: game.TREATIES,
+          build: game.availableStructures(state, data).map((s) => s.id), explore: (data.expeditions || []).map((e) => e.id), choose: ['A', 'B'], propose: game.TREATIES,
           reveal: ['rules'], set: ['theme', 'speed', 'rule'], history: ['all'], reset: ['confirm'],
         }[c] || [];
       } else if (done.length === 2 && c === 'set') {

@@ -8,6 +8,7 @@ const read = (name) => JSON.parse(readFileSync(join(dataDir, name), 'utf8'));
 export function loadData() {
   return {
     rules: read('rules.json'), eras: read('eras.json'), structures: read('structures.json'),
+    discoveries: read('discoveries.json'), expeditions: read('expeditions.json'),
     dilemmas: read('dilemmas.json'), cards: read('cards.json'), rivals: read('rivals.json'),
   };
 }

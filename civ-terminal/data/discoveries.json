@@ -1,0 +1,21 @@
+[
+  {
+    "id": "cooking",
+    "name": "Cooking",
+    "era": "stone",
+    "at": { "knowledge": 8 },
+    "text": "Someone dropped meat into the embers and ate it. Cooked food feeds more, and meals around the fire become lessons: knowledge now spreads faster.",
+    "effects": { "mods": { "knowledgeMult": 0.3 } },
+    "boost": { "campfire": { "food": 0.5 } },
+    "unlocks": []
+  },
+  {
+    "id": "crafts",
+    "name": "Hide and pole work",
+    "era": "stone",
+    "at": { "knowledge": 15 },
+    "text": "Your people learn to lash poles and stretch hides. Shelters and drying racks can now be built.",
+    "effects": {},
+    "unlocks": ["shelter", "drying-rack"]
+  }
+]

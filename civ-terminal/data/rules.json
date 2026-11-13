@@ -1,31 +1,118 @@
 {
-  "startPopulation":   { "value": 12,   "label": "People at turn 1" },
-  "startFood":         { "value": 30,   "label": "Food at turn 1" },
-  "startEnergy":       { "value": 10,   "label": "Energy at turn 1" },
-  "foragePerPerson":   { "value": 1.4,  "label": "Food foraged per person per turn, before crowding" },
-  "landCapacity":      { "value": 60,   "label": "How many foragers the land feeds before returns thin out" },
-  "weatherSwing":      { "value": 0.15, "label": "How far a turn's foraging can swing up or down (0.15 = 15%)" },
-  "eatPerPerson":      { "value": 1,    "label": "Food eaten per person per turn" },
-  "spoilage":          { "value": 0.04, "label": "Share of stored food lost per turn" },
-  "growthRate":        { "value": 0.06, "label": "Population growth per turn when fed and sheltered" },
-  "growthReserve":     { "value": 2,    "label": "Turns of food in store needed before the population grows" },
-  "baseCapacity":      { "value": 16,   "label": "People who can live without built shelter" },
-  "starvationRate":    { "value": 0.5,  "label": "Share of the unfed who die in a famine turn" },
-  "famineUnrest":      { "value": 6,    "label": "Stability lost in a famine turn" },
-  "laborEnergy":       { "value": 0.25, "label": "Energy (labor and firewood) gathered per person per turn" },
-  "knowledgePerPerson":{ "value": 0.02, "label": "Knowledge gained per person per turn" },
-  "knowledgeDecay":    { "value": 0.02, "label": "Share of knowledge forgotten per turn" },
-  "stabilityRest":     { "value": 60,   "label": "Stability the group drifts toward when nothing pushes it" },
-  "stabilityPull":     { "value": 0.05, "label": "How fast stability drifts back toward rest" },
-  "unrestThreshold":   { "value": 20,   "label": "Below this stability, people start leaving" },
-  "armsRaceInterval":  { "value": 8,    "label": "Turns between border decisions with a rival" },
-  "firstArmsTurn":     { "value": 6,    "label": "Turn of the first border decision" },
-  "armsCost":          { "value": 6,    "label": "Food spent each time you build arms" },
-  "armsUpkeep":        { "value": 0.3,  "label": "Food per turn to keep each level of arms" },
-  "raidLoss":          { "value": 0.2,  "label": "Share of stored food lost when you disarm and they build" },
-  "tribute":           { "value": 8,    "label": "Food gained when you build and they disarm" },
-  "securityToStability":{ "value": 2,   "label": "Stability change per security point above or below 2" },
-  "trustGain":         { "value": 8,    "label": "Trust a rival gains when you disarm" },
-  "trustLoss":         { "value": 15,   "label": "Trust a rival loses when you build" },
-  "treatyBreakPenalty":{ "value": 15,   "label": "Extra trust lost for building after pledging to disarm" }
+  "startPopulation": {
+    "value": 12,
+    "label": "People at turn 1"
+  },
+  "startFood": {
+    "value": 30,
+    "label": "Food at turn 1"
+  },
+  "startEnergy": {
+    "value": 10,
+    "label": "Energy at turn 1"
+  },
+  "foragePerPerson": {
+    "value": 1.4,
+    "label": "Food foraged per person per turn, before crowding"
+  },
+  "landCapacity": {
+    "value": 60,
+    "label": "How many foragers the land feeds before returns thin out"
+  },
+  "weatherSwing": {
+    "value": 0.15,
+    "label": "How far a turn's foraging can swing up or down (0.15 = 15%)"
+  },
+  "eatPerPerson": {
+    "value": 1,
+    "label": "Food eaten per person per turn"
+  },
+  "spoilage": {
+    "value": 0.04,
+    "label": "Share of stored food lost per turn"
+  },
+  "growthRate": {
+    "value": 0.06,
+    "label": "Population growth per turn when fed and sheltered"
+  },
+  "growthReserve": {
+    "value": 2,
+    "label": "Turns of food in store needed before the population grows"
+  },
+  "baseCapacity": {
+    "value": 16,
+    "label": "People who can live without built shelter"
+  },
+  "starvationRate": {
+    "value": 0.5,
+    "label": "Share of the unfed who die in a famine turn"
+  },
+  "famineUnrest": {
+    "value": 6,
+    "label": "Stability lost in a famine turn"
+  },
+  "laborEnergy": {
+    "value": 0.25,
+    "label": "Energy (labor and firewood) gathered per person per turn"
+  },
+  "knowledgePerPerson": {
+    "value": 0.02,
+    "label": "Knowledge gained per person per turn"
+  },
+  "knowledgeDecay": {
+    "value": 0.02,
+    "label": "Share of knowledge forgotten per turn"
+  },
+  "stabilityRest": {
+    "value": 60,
+    "label": "Stability the group drifts toward when nothing pushes it"
+  },
+  "stabilityPull": {
+    "value": 0.05,
+    "label": "How fast stability drifts back toward rest"
+  },
+  "unrestThreshold": {
+    "value": 20,
+    "label": "Below this stability, people start leaving"
+  },
+  "armsRaceInterval": {
+    "value": 8,
+    "label": "Turns between border decisions with a rival"
+  },
+  "firstArmsTurn": {
+    "value": 10,
+    "label": "Turn of the first border decision"
+  },
+  "armsCost": {
+    "value": 6,
+    "label": "Food spent each time you build arms"
+  },
+  "armsUpkeep": {
+    "value": 0.3,
+    "label": "Food per turn to keep each level of arms"
+  },
+  "raidLoss": {
+    "value": 0.2,
+    "label": "Share of stored food lost when you disarm and they build"
+  },
+  "tribute": {
+    "value": 8,
+    "label": "Food gained when you build and they disarm"
+  },
+  "securityToStability": {
+    "value": 2,
+    "label": "Stability change per security point above or below 2"
+  },
+  "trustGain": {
+    "value": 8,
+    "label": "Trust a rival gains when you disarm"
+  },
+  "trustLoss": {
+    "value": 15,
+    "label": "Trust a rival loses when you build"
+  },
+  "treatyBreakPenalty": {
+    "value": 15,
+    "label": "Extra trust lost for building after pledging to disarm"
+  }
 }

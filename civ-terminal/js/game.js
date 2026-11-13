@@ -14,11 +14,72 @@ export function newGame(name, seed, data) {
 }
 
 export const eraOf = (state, data) => data.eras.find((e) => e.id === state.era);
+
+const eraIndex = (data, id) => data.eras.findIndex((e) => e.id === id);
+
+// The discovery (if any) that unlocks a structure. Structures that no
+// discovery mentions are available from the start.
+function unlockedBy(data, structureId) {
+  return (data.discoveries || []).find((d) => (d.unlocks || []).includes(structureId)) || null;
+}
+
+export function isUnlocked(state, data, structureId) {
+  const d = unlockedBy(data, structureId);
+  return !d || state.discovered.includes(d.id);
+}
+
+// What the next one costs: the base cost grows with each one already built.
+export function costOf(state, s) {
+  const owned = state.structures[s.id] || 0;
+  const growth = s.costGrowth || 0;
+  const out = {};
+  for (const [k, v] of Object.entries(s.cost)) out[k] = Math.round(v * Math.pow(1 + growth, owned));
+  return out;
+}
+
+// Everything the build menu needs about each structure.
+export function structureList(state, data) {
+  const here = eraIndex(data, state.era);
+  return data.structures.filter((s) => eraIndex(data, s.era) <= here).map((s) => {
+    const unlocked = isUnlocked(state, data, s.id);
+    const d = unlockedBy(data, s.id);
+    const cost = costOf(state, s);
+    const missing = Object.entries(cost).filter(([k, v]) => state[k] < v).map(([k, v]) => ({ resource: k, need: v, have: Math.floor(state[k]) }));
+    return {
+      ...s, cost, owned: state.structures[s.id] || 0, unlocked,
+      lockedReason: unlocked ? null : `Reach ${d.at.knowledge} knowledge (${d.name}).`,
+      affordable: unlocked && !missing.length, missing,
+    };
+  });
+}
+
+// The next thing knowledge is working toward.
+export function nextGoal(state, data) {
+  const next = (data.discoveries || []).filter((d) => !state.discovered.includes(d.id) && d.era === state.era)
+    .sort((a, b) => a.at.knowledge - b.at.knowledge)[0];
+  if (next) return { at: next.at.knowledge, label: next.name, kind: 'discovery' };
+  const era = eraOf(state, data);
+  if (era && era.advanceAt) return { at: era.advanceAt.knowledge, label: `end of the ${era.name}`, kind: 'era' };
+  return null;
+}
+
+function checkDiscoveries(state, data, lines) {
+  for (const d of data.discoveries || []) {
+    if (state.discovered.includes(d.id) || d.era !== state.era) continue;
+    if (state.knowledge < d.at.knowledge) continue;
+    state.discovered.push(d.id);
+    applyEffects(state, d.effects || {});
+    const text = `Discovery: ${d.name}. ${d.text}`;
+    state.history.push({ turn: state.turn, kind: 'discovery', text });
+    lines.push({ kind: 'discovery', text });
+  }
+}
 export const rivalById = (state, id) => state.rivals.find((r) => r.id === id);
 
 // After each turn: has anything come up that needs the player?
 function trigger(state, data, lines) {
   if (state.over) return;
+  checkDiscoveries(state, data, lines);
   const era = eraOf(state, data);
   if (era.advanceAt && state.knowledge >= era.advanceAt.knowledge && !state.flags.eraReady) {
     state.flags.eraReady = true;
@@ -32,6 +93,10 @@ function trigger(state, data, lines) {
       state.history.push({ turn: state.turn, kind: 'era', text: `Ready to leave the ${era.name}. Score at this point: ${score(state)}.` });
       lines.push({ kind: 'era', text: `Your people know enough to leave the ${era.name}. The next era isn't built yet, so this is the end of the current build. Score: ${score(state)}. You can keep playing.` });
     }
+  }
+  if (state.turn >= 3 && !state.flags.exploreHint && !state.parties.length && !state.history.some((h) => h.kind === 'expedition')) {
+    state.flags.exploreHint = true;
+    lines.push({ kind: 'alert', text: 'Some of the band want to see what lies beyond the hills. Open Expeditions to send a party out. They come back with knowledge.' });
   }
   if (state.dilemma) return;
   const rival = state.rivals[0];
@@ -129,23 +194,60 @@ export function choose(state, data, key) {
   return { ok: true, lines };
 }
 
+// Structures the player can build right now (unlocked, in this era or earlier).
 export function availableStructures(state, data) {
-  return data.structures.filter((s) => s.era === state.era || data.eras.findIndex((e) => e.id === s.era) < data.eras.findIndex((e) => e.id === state.era));
+  return structureList(state, data).filter((s) => s.unlocked);
 }
 
 export function build(state, data, id) {
-  const options = availableStructures(state, data);
-  const s = options.find((x) => x.id === String(id || '').toLowerCase());
-  if (!s) return { ok: false, lines: [{ kind: 'error', text: `Unknown structure. You can build: ${options.map((x) => x.id).join(', ')}.` }] };
+  const list = structureList(state, data);
+  const s = list.find((x) => x.id === String(id || '').toLowerCase());
+  if (!s) return { ok: false, lines: [{ kind: 'error', text: `Unknown structure. You can build: ${list.filter((x) => x.unlocked).map((x) => x.id).join(', ')}.` }] };
   if (state.over) return { ok: false, lines: [{ kind: 'error', text: 'This civilization has ended.' }] };
-  const short = Object.entries(s.cost).filter(([k, v]) => state[k] < v).map(([k, v]) => `${v} ${k} (you have ${Math.floor(state[k])})`);
-  if (short.length) return { ok: false, lines: [{ kind: 'error', text: `Not enough to build a ${s.name.toLowerCase()}: needs ${short.join(' and ')}.` }] };
-  const cost = {};
-  for (const [k, v] of Object.entries(s.cost)) cost[k] = -v;
-  applyEffects(state, cost);
+  if (!s.unlocked) return { ok: false, lines: [{ kind: 'error', text: `${s.name} isn't possible yet. ${s.lockedReason}` }] };
+  if (s.missing.length) {
+    const need = s.missing.map((m) => `${m.need} ${m.resource} (you have ${m.have})`).join(' and ');
+    return { ok: false, lines: [{ kind: 'error', text: `Not enough to build a ${s.name.toLowerCase()}: needs ${need}.` }] };
+  }
+  const spend = {};
+  for (const [k, v] of Object.entries(s.cost)) spend[k] = -v;
+  applyEffects(state, spend);
   state.structures[s.id] = (state.structures[s.id] || 0) + 1;
-  state.history.push({ turn: state.turn, kind: 'build', text: `Built a ${s.name.toLowerCase()} (${state.structures[s.id]} in total).` });
-  return { ok: true, structure: s, lines: [{ kind: 'result', text: `Built a ${s.name.toLowerCase()}. You now have ${state.structures[s.id]}.` }] };
+  const paid = Object.entries(s.cost).map(([k, v]) => `${v} ${k}`).join(' and ');
+  state.history.push({ turn: state.turn, kind: 'build', text: `Built a ${s.name.toLowerCase()} for ${paid} (${state.structures[s.id]} in total).` });
+  return { ok: true, structure: s, spent: s.cost, lines: [{ kind: 'result', text: `Built a ${s.name.toLowerCase()} for ${paid}. You now have ${state.structures[s.id]}.` }] };
+}
+
+// Expeditions: send a small party out; it comes home with knowledge.
+export function expeditionList(state, data) {
+  const away = state.parties.length > 0;
+  return (data.expeditions || []).map((e) => {
+    const missing = Object.entries(e.cost).filter(([k, v]) => state[k] < v).map(([k, v]) => ({ resource: k, need: v, have: Math.floor(state[k]) }));
+    const tooFew = state.pop < e.people + 4;
+    const locked = state.knowledge < (e.minKnowledge || 0);
+    let blocked = null;
+    if (locked) blocked = `Needs ${e.minKnowledge} knowledge.`;
+    else if (away) blocked = 'A party is already out.';
+    else if (tooFew) blocked = `Needs ${e.people + 4} people (so ${e.people} can go and 4 stay).`;
+    else if (missing.length) blocked = `Needs ${missing.map((m) => `${m.need} ${m.resource}`).join(' and ')}.`;
+    return { ...e, locked, missing, blocked, available: !blocked };
+  });
+}
+
+export function explore(state, data, id) {
+  const list = expeditionList(state, data);
+  const e = list.find((x) => x.id === String(id || '').toLowerCase());
+  if (!e) return { ok: false, lines: [{ kind: 'error', text: `Unknown expedition. Options: ${list.map((x) => x.id).join(', ')}.` }] };
+  if (state.over) return { ok: false, lines: [{ kind: 'error', text: 'This civilization has ended.' }] };
+  if (e.blocked) return { ok: false, lines: [{ kind: 'error', text: `Can't send "${e.name}": ${e.blocked}` }] };
+  const spend = {};
+  for (const [k, v] of Object.entries(e.cost)) spend[k] = -v;
+  applyEffects(state, spend);
+  state.pop -= e.people;
+  state.parties.push({ id: e.id, start: state.turn, due: state.turn + e.turns - 1, people: e.people });
+  const paid = Object.entries(e.cost).map(([k, v]) => `${v} ${k}`).join(' and ');
+  state.history.push({ turn: state.turn, kind: 'expedition', text: `Sent out "${e.name}" (${e.people} people, ${e.turns} turns, ${paid}).` });
+  return { ok: true, expedition: e, lines: [{ kind: 'result', text: `${e.text} They set out with ${paid}, and should be back in ${e.turns} turns.` }] };
 }
 
 export const TREATIES = ['disarmament'];
@@ -183,9 +285,10 @@ export function setRule(state, data, key, value) {
 export function mapSummary(state, data) {
   const era = eraOf(state, data);
   const parts = Object.entries(state.structures).filter(([, n]) => n > 0)
-    .map(([id, n]) => `${n} ${data.structures.find((s) => s.id === id).name.toLowerCase()}${n === 1 ? '' : 's'}`);
-  const built = parts.length ? parts.join(' and ') : 'no built structures yet';
-  return `Map: a river valley between hills, drawn as contour lines. ${state.name}'s camp sits beside the river with ${built}. ` +
-    `${state.pop} ${state.pop === 1 ? 'settler moves' : 'settlers move'} between the camp, the river and the foraging grounds. ` +
+    .map(([id, n]) => `${n} ${data.structures.find((x) => x.id === id).name.toLowerCase()}${n === 1 ? '' : 's'}`);
+  const built = parts.length ? parts.join(', ') : 'nothing built yet';
+  const away = state.parties.length ? ` A party of ${state.parties[0].people} is away on an expedition.` : '';
+  return `Map: a pixel-art river valley. A blue river winds from top to bottom through green grassland, with forest and hills away from the water. ` +
+    `${state.name}'s camp sits on the bank with ${built}. ${state.pop} ${state.pop === 1 ? 'settler walks' : 'settlers walk'} between the camp, the river and the foraging grounds.${away} ` +
     `${era.name}, turn ${state.turn}. Shelter for ${capacity(state, data)}.` + (state.flags.weir ? ' A stone weir crosses the river.' : '');
 }

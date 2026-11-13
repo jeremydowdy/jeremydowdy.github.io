@@ -1,7 +1,7 @@
 // The game state: one plain, JSON-serializable object.
 import { hashSeed } from './rng.js';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 export const NAME_PATTERN = /^[A-Za-z0-9 -]{1,24}$/;
 
 export function validateName(raw) {
@@ -34,8 +34,10 @@ export function createState({ name, seed, data }) {
     stability: rules.stabilityRest,
     arms: 0,
     structures: {},
-    mods: { foodPerTurn: 0, energyPerTurn: 0, knowledgePerTurn: 0, stabilityPerTurn: 0, forageMult: 1, spoilMult: 1 },
+    mods: { foodPerTurn: 0, energyPerTurn: 0, knowledgePerTurn: 0, knowledgeMult: 1, stabilityPerTurn: 0, forageMult: 1, spoilMult: 1 },
     flags: {},
+    discovered: [],   // ids of discoveries made
+    parties: [],      // expedition parties away: { id, start, due, people }
     locks: [],
     resolved: [],
     pending: [],      // delayed consequences waiting for their turn
