@@ -56,6 +56,61 @@ html[data-theme="recruiter"] #projects > ul:first-of-type > li {
 html[data-theme="recruiter"] footer { color: #b8b8bd; }
 html[data-theme="recruiter"] .ai-credit-badge { color: #e6e6e6; }
 
+/* ---- Life pass: gradient accent, brighter hero, depth and motion ---- */
+html[data-theme="recruiter"] { --accent2: #8fe3ff; --accent-deep: #1b7fe0; }
+html[data-theme="recruiter"] header {
+    padding: 44px 20px 40px;
+    background:
+        radial-gradient(ellipse at 50% 120%, rgba(77,178,255,.38), transparent 62%),
+        linear-gradient(rgba(10,12,16,.66), rgba(10,12,16,.78)),
+        url('assets/hero-800.jpg') center/cover no-repeat;
+    border-bottom: 0;
+    box-shadow: 0 1px 0 rgba(77,178,255,.5), 0 12px 40px -18px rgba(77,178,255,.55);
+}
+@media (min-width: 801px) {
+    html[data-theme="recruiter"] header {
+        background-image:
+            radial-gradient(ellipse at 50% 120%, rgba(77,178,255,.38), transparent 62%),
+            linear-gradient(rgba(10,12,16,.66), rgba(10,12,16,.78)),
+            url('assets/hero-1600.jpg');
+    }
+}
+html[data-theme="recruiter"] header h1 {
+    font-size: 3em; font-weight: 600; letter-spacing: .5px;
+    background: linear-gradient(90deg, #ffffff 30%, var(--accent2) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #fff;
+}
+html[data-theme="recruiter"] header p.focus-line { color: var(--accent2); }
+/* Email is the primary action: filled */
+html[data-theme="recruiter"] .contact-row a:first-child {
+    background: linear-gradient(135deg, var(--accent2), var(--gold) 55%, var(--accent-deep)); color: #06121f; border-color: transparent; font-weight: 600;
+}
+html[data-theme="recruiter"] .contact-row a { transition: transform .2s ease, box-shadow .2s ease, background .2s ease; }
+html[data-theme="recruiter"] .contact-row a:hover { background: var(--gold); color: #06121f; transform: translateY(-2px); box-shadow: 0 8px 22px -6px rgba(77,178,255,.7); }
+html[data-theme="recruiter"] section {
+    background: linear-gradient(180deg, #202027, var(--card) 60%);
+    border-top: 3px solid var(--gold); box-shadow: 0 14px 34px -22px rgba(77,178,255,.45);
+    animation: recRise .6s ease both;
+}
+html[data-theme="recruiter"] section:nth-of-type(2) { animation-delay: .08s; }
+html[data-theme="recruiter"] section:nth-of-type(3) { animation-delay: .16s; }
+html[data-theme="recruiter"] section h2 { border-bottom: 0; background: linear-gradient(90deg, var(--gold), transparent) bottom/100% 3px no-repeat; padding-bottom: 8px; }
+html[data-theme="recruiter"] #projects > ul:first-of-type > li {
+    border-left: 3px solid var(--gold); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+html[data-theme="recruiter"] #projects > ul:first-of-type > li:hover {
+    transform: translateY(-3px); border-color: var(--accent2); box-shadow: 0 12px 26px -14px rgba(77,178,255,.65);
+}
+html[data-theme="recruiter"] .tech {
+    display: inline-block; margin: 8px 0 4px; padding: 3px 12px; color: var(--accent2); font-size: .85em;
+    background: rgba(77,178,255,.12); border: 1px solid rgba(77,178,255,.35); border-radius: 999px;
+}
+html[data-theme="recruiter"] .doc-link { margin-top: 10px; }
+html[data-theme="recruiter"] .cert-link { padding: 1px 10px; border: 1px solid rgba(77,178,255,.45); border-radius: 999px; }
+html[data-theme="recruiter"] .cert-link:hover { background: var(--gold); color: #06121f; text-decoration: none; }
+html[data-theme="recruiter"] h3 { color: var(--accent2); font-size: 1.05em; letter-spacing: .08em; text-transform: uppercase; }
+@keyframes recRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
 @media (max-width: 480px) {
     html[data-theme="recruiter"] header h1 { font-size: 2em; }
     html[data-theme="recruiter"] header { padding: 24px 14px; }
