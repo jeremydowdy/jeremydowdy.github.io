@@ -214,6 +214,15 @@ footer {
     transition: all 0.2s ease;
 }
 .ai-credit-badge:hover { background-color: rgba(255, 255, 255, 0.18); color: #ffffff; }
+.ai-credit-icon {
+    /* Claude's coral. Light enough to stay readable on the dark background. */
+    color: #d97757;
+    font-size: 1.45em;
+    line-height: 1;
+    text-shadow: 0 0 8px rgba(217, 119, 87, 0.55);
+}
+.ai-credit-badge:hover .ai-credit-icon { color: #f0916f; }
+
 
 @media (max-width: 600px) {
     .site-header { padding: 32px 16px 18px; }

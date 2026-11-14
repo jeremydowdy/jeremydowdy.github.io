@@ -160,8 +160,14 @@
         }
 
         .ai-credit-icon {
-            font-size: 1em;
+            /* Claude's coral. Light enough to stay readable on the dark background. */
+            color: #d97757;
+            font-size: 1.45em;
+            line-height: 1;
+            text-shadow: 0 0 8px rgba(217, 119, 87, 0.55);
         }
+
+        .ai-credit-badge:hover .ai-credit-icon { color: #f0916f; }
 
         .chat-container {
             position: fixed;
