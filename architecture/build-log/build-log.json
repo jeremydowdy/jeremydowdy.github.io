@@ -260,6 +260,19 @@
         "commit": "ecb9cde",
         "live": "2026-11-13T22:04:30Z"
       }
+    },
+    {
+      "id": "civ-terminal-people-and-food",
+      "date": "2026-11-14",
+      "title": "Civ Terminal: men and women, pregnancies, a food economy that adds up, and the River Clan gamble",
+      "tried": "Feedback from a phone screenshot at turn 42: the population hardly moved (between 11 and 17 people over 41 turns), the food and wood numbers didn't make sense, and the Stone Age goal was stuck showing 60 knowledge when the player already had 70.9. The asks were: start with 5 women and 5 men, all pregnant, so a year later there are about 15; births should grow exponentially with how many women there are; more things to unlock as knowledge rises; and every 5 turns a gamble where the River Clan might share knowledge or attack, with mushrooms that boost thinking but might kill. I modeled individual men and women, pregnancies (3 turns, rest, miscarriage, death in childbirth, twins), children who grow up into men and women, fishing, hunting, wood and storage as food sources with seasons and diminishing returns, a ledger panel that lists every source and sink, ten discoveries, and weighted random events in a data file whose odds shift with the rival's trust and your arms. Old saves migrate.",
+      "broke": "My first pregnancy rates gave only about 0.5 babies per woman per year after the first year (2.5 births a year from 5 women), nowhere near the 7 to 10 a year expected at 20 people. The cause was a mother's rest turn plus a wait of several turns to conceive; I shortened the cycle, raised the chance of conceiving, and let children grow up in 2 years instead of 3. The ledger then showed a balance problem: at 88 people, gathering brought in 77 food and 21 wood a turn, while the new fish traps added about 13 and woodcutters about 5, so the new sources hardly mattered. Gathering and wood now thin out as the band grows. The Stone Age length took three tries (100, 150, then 130 knowledge) to land at about turn 58 for a sensible bot. Eleven old tests failed because they assumed the old population model, and then three of my replacements failed from my own setup mistakes: an off-by-one in when a pregnancy comes due, a lost-pregnancy test where the hungry band was starving instead of just thin, and children maturing a turn later than I counted. I also broke progression.test.js with a bad scripted edit that cut a test in the wrong place; I restored it from git and redid it.",
+      "fixed": "With plenty of food and room, the band now goes from 10 to about 14 people in the first year (4.6 births on average), and 12 women make about 18 babies in two years against 4.5 from 3 women, so growth is exponential. A band left alone levels off near 22 because food and room run out, and a sensible player grows past 80. In 40-seed runs there were no collapses. Famines are rare in the first 30 turns and common later, and people walk out about 4 times per 70 turns. The browser smoke test now checks the ledger, the discoveries list, the invite and its cooldown, the mushroom decision, and the mastered-era goal. 114 unit tests and 61 browser checks pass.",
+      "components": [],
+      "shipped": {
+        "commit": "f658734",
+        "live": "2026-11-14T01:51:30Z"
+      }
     }
   ]
 }
