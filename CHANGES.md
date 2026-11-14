@@ -35,7 +35,7 @@ Compressed hero images: `assets/hero-1600.jpg` (~154 KB) and `assets/hero-800.jp
 - Trimmed About wording needs approval
 - Credly: all four certs link to the profile `https://www.credly.com/users/jeremy-dowdy.a7d61c62`; each has a TODO for its own badge URL
 - `[OG_IMAGE_PATH]` for og:image / twitter:image
-- LPI cert: added with a generic name "Linux Professional Institute (LPI) Certification" and your verify link; replace with the exact title
+- LPI Linux Foundations: added with your verify link
 - GitHub URL `https://github.com/jeremydowdy` was derived from the repo owner; confirm
 - Tech-stack lines are my reading of each project; confirm
 - The AI assistant is unchanged and still answers only from owner-provided information
