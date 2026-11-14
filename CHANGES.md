@@ -6,7 +6,7 @@ commits `ca723de` through `538d737`. Last commit that still has it: `538d737`.
 
 ## Current home page
 - Look is the original golf hero + glass cards. CSS now lives in `styles.css` (was inline).
-- Added life: glass stat strip (USMC veteran / 5 certifications / M.S. in progress, Dec 2027 / 3 live projects), entrance fade-ups, hover lifts on project and cert cards, green accent edges, tech-stack chips on each project, education timeline, GitHub button.
+- Added life: entrance fade-ups, hover lifts on project and cert cards, green accent edges, tech-stack chips on each project, education timeline, GitHub button.
 - Reduced-motion support; focus rings; axe-core 0 violations.
 - Certifications: each links to its PDF in `assets/certs/` (LPI Linux Essentials, CompTIA Security+, CompTIA SecurityX, ITIL 4). Renew by overwriting the PDF with the same filename. One "View all badges on Credly" pill links to the Credly profile.
 - Meta description plus Open Graph / Twitter title and description added. No share image yet.
