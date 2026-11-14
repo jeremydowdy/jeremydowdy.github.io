@@ -33,7 +33,7 @@ Compressed hero images: `assets/hero-1600.jpg` (~154 KB) and `assets/hero-800.jp
 - `[EMAIL]` and `[RESUME_PATH]` (contact row)
 - Hero focus line (`[PLACEHOLDER: owner to confirm wording]`)
 - Trimmed About wording needs approval
-- Credly: all four certs link to the profile `https://www.credly.com/users/jeremy-dowdy.a7d61c62`; each has a TODO for its own badge URL
+- Credly: all four certs link to the profile `https://www.credly.com/users/jeremy-dowdy.a7d61c62`; a single "View all badges on Credly" pill sits under the list; each cert links to its own PDF instead
 - `[OG_IMAGE_PATH]` for og:image / twitter:image
 - Cert PDFs live in `assets/certs/` (LPI Linux Essentials, Security+, SecurityX, ITIL 4). To renew, overwrite the PDF with the same filename. AWS PDF is not published yet (exam results notice contains candidate ID, registration number and score).
 - GitHub URL `https://github.com/jeremydowdy` was derived from the repo owner; confirm
