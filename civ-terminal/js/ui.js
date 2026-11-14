@@ -3,7 +3,8 @@
 // hands every click to `actions`; it never changes the state itself.
 import * as game from './game.js';
 import { describeEffects } from './commands.js';
-import { forecast, capacity, people } from './economy.js';
+import { forecast, capacity, people, men, ledger } from './economy.js';
+import { inviteInfo } from './events.js';
 import { score } from './scoring.js';
 import { record } from './rivals.js';
 import { MOVES } from './gametheory/armsRace.js';
@@ -75,8 +76,9 @@ export function createUI({ data, actions, reducedMotion = false }) {
     const when = game.calendar(state, data);
     const crowded = people(state) > cap;
     chipEls.pop.val.textContent = n0(people(state));
-    chipEls.pop.sub.textContent = `${state.pop} adults, ${state.kids} ${state.kids === 1 ? 'child' : 'kids'}` + (away ? `, ${away} away` : '');
-    chipEls.pop.sub2.replaceChildren(h('span', { class: crowded ? 'down' : '' }, crowded ? `crowded: room for ${cap}` : `room for ${cap}`));
+    chipEls.pop.sub.textContent = `${men(state)} men, ${state.women} women, ${state.kids} kids` + (away ? `, ${away} away` : '');
+    chipEls.pop.sub2.replaceChildren(h('span', { class: crowded ? 'down' : '' },
+      (state.pregnancies.length ? `${state.pregnancies.length} pregnant \u00B7 ` : '') + (crowded ? `crowded: room for ${cap}` : `room for ${cap}`)));
     chipEls.food.val.textContent = n0(state.food);
     chipEls.food.sub.replaceChildren(h('span', { class: f.food >= 0 ? 'up' : 'down' }, perTurn(f.food)), ' per turn');
     chipEls.food.sub2.replaceChildren(when.seasonal ? h('span', { class: when.season.cold ? 'down' : '' }, `${when.season.name}: foraging ${Math.round((when.season.forage ?? 1) * 100)}%`) : '');
@@ -98,10 +100,13 @@ export function createUI({ data, actions, reducedMotion = false }) {
         if (Math.abs(diff) >= (key === 'pop' ? 1 : 0.5)) showDelta(key, diff);
       }
     }
-    $('goal').replaceChildren(...(goal ? [
+    $('goal').replaceChildren(...(goal ? (goal.kind === 'done' ? [
+      h('strong', {}, `You have mastered the ${goal.label}.`),
+      ` The next era isn't built yet, so this is as far as the game goes for now. Keep growing the band, and the score.`,
+    ] : [
       goal.kind === 'discovery' ? 'Next discovery: ' : 'Goal: ',
       h('strong', {}, goal.label), ` at ${goal.at} knowledge (you have ${n1(state.knowledge)}). Campfires spread knowledge; expeditions bring some home.`,
-    ] : ['']));
+    ]) : ['']));
   }
 
   // ---------------------------------------------------------------- build
@@ -144,8 +149,8 @@ export function createUI({ data, actions, reducedMotion = false }) {
     for (const e of game.expeditionList(state, data)) {
       const card = h('button', { type: 'button', class: 'card noicon' + (e.locked ? ' locked' : ''), 'data-key': 'explore-' + e.id, 'aria-disabled': !e.available },
         h('span', { class: 'nm' }, e.name, h('small', {}, ` ${e.people} people, ${e.turns} turns`)),
-        h('span', { class: 'cost' }, costLine(e.cost, e.missing), ' ', h('span', { class: 'tag' }, `  +${e.reward.knowledge} knowledge`)),
-        h('span', { class: 'desc' }, e.text, ' ', h('span', { class: 'risk' }, `${Math.round(e.risk * 100)}% chance one doesn't come back.`),
+        h('span', { class: 'cost' }, costLine(e.cost, e.missing), ' ', h('span', { class: e.random ? 'risk' : 'tag' }, e.random ? '  random reward, real risk' : `  +${e.reward.knowledge} knowledge`)),
+        h('span', { class: 'desc' }, e.text, ' ', e.risk ? h('span', { class: 'risk' }, `${Math.round(e.risk * 100)}% chance one doesn't come back.`) : null,
           e.blocked ? ` Not now: ${e.blocked}` : ''));
       card.addEventListener('click', () => actions.explore(e.id));
       list.append(card);
@@ -166,17 +171,54 @@ export function createUI({ data, actions, reducedMotion = false }) {
       const pledge = h('button', { type: 'button', class: 'btn small', 'data-key': 'propose', 'aria-disabled': pledged || state.over || !!state.dilemma },
         pledged ? 'Pledge in force' : 'Propose a disarmament pledge');
       pledge.addEventListener('click', () => actions.propose());
+      const inv = inviteInfo(state, data);
+      const invite = h('button', { type: 'button', class: 'btn small', 'data-key': 'invite', 'aria-disabled': !inv.available },
+        inv.blocked ? `Invite them to share knowledge (${inv.blocked.replace(/\.$/, '')})` : 'Invite them to share knowledge');
+      invite.addEventListener('click', () => actions.invite());
       box.append(h('div', { class: 'rival' },
         h('div', { class: 'nm' }, h('span', {}, r.name), h('span', {}, `trust ${r.trust}`)),
         h('div', { class: 'strat' }, `${strat.label}: ${strat.description}`),
         h('div', { class: 'meter' }, 'trust', h('div', { class: 'bar', 'aria-hidden': 'true' }, h('i', { style: `width:${r.trust}%` }))),
         rec.rounds ? rounds : h('p', { class: 'hint' }, 'No border decisions yet.'),
         rec.rounds ? h('p', { class: 'hint' }, `Green: they disarmed. Red: they built. Arms: you ${state.arms}, them ${r.arms}.`) : null,
-        pledge));
+        pledge,
+        h('p', { class: 'hint' }, `Inviting them costs ${Object.entries(inv.cost).map(([k, v]) => `${v} ${k}`).join(' and ')} as a gift and is a gamble: they might teach you, trade, demand tribute, or attack. The more they trust you, the better the odds, and a well-armed camp is attacked less. You can invite them every ${inv.cooldown} turns.`),
+        invite));
     }
   }
 
   // ---------------------------------------------------------------- history and rules
+  // ---------------------------------------------------------------- food and wood ledger
+  function updateLedger(state) {
+    const L = ledger(state, data);
+    const box = $('ledger');
+    box.replaceChildren();
+    const section = (title, rows, net, unit) => {
+      const wrap = h('div', { class: 'led' }, h('h3', {}, title));
+      for (const row of rows) {
+        wrap.append(h('div', { class: 'row2' }, h('span', {}, row.label), h('span', { class: row.amount >= 0 ? 'up' : 'down' }, perTurn(row.amount))));
+      }
+      wrap.append(h('div', { class: 'row2 total' }, h('span', {}, `Net ${unit}`), h('span', { class: net >= 0 ? 'up' : 'down' }, perTurn(net))));
+      return wrap;
+    };
+    box.append(section('Food', [...L.food.in, ...L.food.out], L.food.net, 'food'));
+    box.append(section('Wood', L.energy.in, L.energy.net, 'wood'));
+    box.append(h('p', { class: 'hint' }, `${L.season.name}. Average weather; spoilage, hunger and births are not counted. Fish run best in spring and summer, game in autumn.`));
+  }
+
+  function updateDiscoveries(state) {
+    const list = $('discList');
+    list.replaceChildren();
+    for (const d of data.discoveries.filter((x) => x.era === state.era).sort((a, b) => a.at.knowledge - b.at.knowledge)) {
+      const got = state.discovered.includes(d.id);
+      const names = (d.unlocks || []).map((id) => (data.structures.find((s) => s.id === id) || {}).name).filter(Boolean);
+      list.append(h('li', { class: got ? 'got' : 'next' },
+        h('b', {}, `${got ? '\u2713 ' : ''}${d.name}`), h('span', {}, ` at ${d.at.knowledge}`),
+        got ? h('small', {}, d.text) : null,
+        names.length ? h('small', { class: 'unl' }, `Unlocks: ${names.join(', ')}`) : null));
+    }
+  }
+
   // ---------------------------------------------------------------- timeline
   const CHART = { w: 300, h: 80, pad: 4, window: 60 };
 
@@ -228,6 +270,7 @@ export function createUI({ data, actions, reducedMotion = false }) {
   function turnRow(rec, notes, now) {
     const flow = [];
     if (rec.born) flow.push(h('span', { class: 'good' }, `+${rec.born} born`));
+    if (rec.lost) flow.push(h('span', { class: 'bad' }, `${rec.lost} pregnancy lost`));
     if (rec.died) flow.push(h('span', { class: 'bad' }, `-${rec.died} died`));
     if (rec.left) flow.push(h('span', { class: 'bad' }, `-${rec.left} left`));
     const stats = now ? null : h('div', { class: 'tstats' },
@@ -274,6 +317,7 @@ export function createUI({ data, actions, reducedMotion = false }) {
       h('p', { class: 'up' }, `▲ ${o.upside}`),
       h('p', { class: 'dn' }, `▼ ${o.cost}`),
     ];
+    if (card.type === 'event') kids.push(h('p', { class: 'fx' }, 'The outcome is random.'));
     if (card.type === 'choice') {
       kids.push(h('p', { class: 'fx' }, `Right away: ${describeEffects(o.now)}.`));
       for (const l of o.later || []) kids.push(h('p', { class: 'fx' }, `In about ${l.after} turns: ${describeEffects(l.effects)}.`));
@@ -289,7 +333,7 @@ export function createUI({ data, actions, reducedMotion = false }) {
     const card = game.currentCard(state, data);
     const root = $('decision');
     root.replaceChildren(
-      h('p', { class: 'kicker' }, card.type === 'armsRace' ? `Border decision, turn ${state.dilemma.turn}` : `Decision, turn ${state.dilemma.turn}`),
+      h('p', { class: 'kicker' }, card.type === 'armsRace' ? `Border decision, turn ${state.dilemma.turn}` : card.type === 'event' ? `Random event, turn ${state.dilemma.turn}` : `Decision, turn ${state.dilemma.turn}`),
       h('h2', { id: 'mTitle' }, card.title),
       h('p', { class: 'story' }, card.text),
       h('div', { class: 'opts' }, optionCard(card, 'A'), optionCard(card, 'B')));
@@ -376,6 +420,8 @@ export function createUI({ data, actions, reducedMotion = false }) {
     updateExpeditions(state);
     updateRivals(state);
     updateTimeline(state);
+    updateLedger(state);
+    updateDiscoveries(state);
     updateRules(state);
     updateTime(state);
     updateDecision(state);

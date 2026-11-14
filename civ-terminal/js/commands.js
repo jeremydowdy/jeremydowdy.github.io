@@ -2,7 +2,7 @@
 // of text ({ text, cls }), and anything that touches the page goes through
 // the `host` object passed in. That keeps the commands testable in Node.
 import * as game from './game.js';
-import { capacity, forecast, people } from './economy.js';
+import { capacity, forecast, people, men } from './economy.js';
 import { record } from './rivals.js';
 import { score } from './scoring.js';
 import { MOVES } from './gametheory/armsRace.js';
@@ -10,7 +10,7 @@ import { completeWord } from './terminal-complete.js';
 
 const THEMES = ['green', 'amber', 'white'];
 const SPEEDS = ['normal', 'instant', 'slow'];
-const COMMANDS = ['help', 'status', 'build', 'explore', 'decide', 'choose', 'rivals', 'propose', 'wait', 'timeline', 'history',
+const COMMANDS = ['help', 'status', 'build', 'explore', 'decide', 'choose', 'rivals', 'invite', 'propose', 'wait', 'timeline', 'history',
   'reveal', 'set', 'map', 'seed', 'clear', 'save', 'load', 'reset'];
 
 const L = (text = '', cls = '') => ({ text, cls });
@@ -47,7 +47,7 @@ function statusLines(state, data) {
   const built = Object.entries(state.structures).filter(([, n]) => n > 0).map(([id, n]) => `${id} x${n}`).join(', ') || 'none';
   const lines = [
     L(`${state.name}: ${era.name}, ${when.label}, turn ${state.turn}`, 'head'),
-    L(`  population  ${people(state)}   (${state.pop} adults, ${state.kids} ${state.kids === 1 ? 'child' : 'children'}; room for ${cap}${people(state) > cap ? ', crowded' : ''})`),
+    L(`  population  ${people(state)}   (${men(state)} men, ${state.women} women${state.pregnancies.length ? `, ${state.pregnancies.length} pregnant` : ''}, ${state.kids} ${state.kids === 1 ? 'child' : 'children'}; room for ${cap}${people(state) > cap ? ', crowded' : ''})`),
     L(`  food        ${n0(state.food)}   (${signed(f.food)} per turn${when.seasonal ? ' this ' + when.season.name.toLowerCase() : ''})`),
     L(`  energy      ${n0(state.energy)}`),
     L(`  knowledge   ${n1(state.knowledge)}` + (goal ? `   (next: ${goal.label} at ${goal.at})` : '')),
@@ -72,7 +72,7 @@ function decideLines(state, data) {
     const next = state.nextArmsTurn;
     return [L(`Nothing to decide right now. The next border decision comes around turn ${next}. Type "wait" to pass time.`)];
   }
-  const lines = [L(`DECISION: ${card.title}   (turn ${state.dilemma.turn})`, 'head'), L(card.text), L()];
+  const lines = [L(`${card.type === 'event' ? 'RANDOM EVENT' : 'DECISION'}: ${card.title}   (turn ${state.dilemma.turn})`, 'head'), L(card.text), L()];
   for (const key of ['A', 'B']) {
     const o = card.options[key];
     lines.push(L(`  ${key}) ${o.label}`, 'head'));
@@ -85,7 +85,9 @@ function decideLines(state, data) {
     }
   }
   lines.push(L());
-  if (card.type === 'armsRace') {
+  if (card.type === 'event') {
+    lines.push(L('The outcome is random. What you have already learned can change the odds.', 'dim'));
+  } else if (card.type === 'armsRace') {
     const m = card.matrix;
     const cell = (k) => `${m[k][0]}, ${m[k][1]}`.padEnd(14);
     lines.push(L('Payoff matrix: security points as (you, them)'));
@@ -140,7 +142,7 @@ function timelineLines(state, arg) {
   if (!recs.length) return [L('Nothing has happened yet. Type "wait" to let a turn pass.')];
   const lines = [L(arg === 'all' || recs.length === state.timeline.length ? 'Timeline' : `Timeline (last ${recs.length} of ${state.timeline.length} turns; "timeline all" shows everything)`, 'head')];
   for (const r of recs) {
-    const flow = [r.born ? `+${r.born} born` : '', r.died ? `-${r.died} died` : '', r.left ? `-${r.left} left` : ''].filter(Boolean).join(', ');
+    const flow = [r.born ? `+${r.born} born` : '', r.lost ? `${r.lost} pregnancy lost` : '', r.died ? `-${r.died} died` : '', r.left ? `-${r.left} left` : ''].filter(Boolean).join(', ');
     lines.push(L(`  turn ${String(r.turn).padStart(3)}  ${r.label.padEnd(16)} people ${String(r.pop + r.kids).padStart(3)}${flow ? ` (${flow})` : ''}  food ${n0(r.food)}`, r.left || r.died >= 3 ? '' : 'dim'));
   }
   return lines;
@@ -185,8 +187,8 @@ function exploreListLines(state, data) {
   const lines = [L('Expeditions', 'head')];
   for (const e of game.expeditionList(state, data)) {
     const cost = Object.entries(e.cost).map(([k, v]) => `${v} ${k}`).join(', ');
-    lines.push(L(`  ${e.id.padEnd(13)} ${e.people} people, ${e.turns} turns, ${cost}; +${e.reward.knowledge || 0} knowledge`));
-    lines.push(L(`  ${''.padEnd(13)} ${e.blocked ? 'Not now: ' + e.blocked : e.text}`, 'dim'));
+    lines.push(L(`  ${e.id.padEnd(17)} ${e.people} people, ${e.turns} turns, ${cost}; ${e.random ? 'a random reward, and a real risk' : `+${e.reward.knowledge || 0} knowledge`}`));
+    lines.push(L(`  ${''.padEnd(17)} ${e.blocked ? 'Not now: ' + e.blocked : e.text}`, 'dim'));
   }
   lines.push(L('Example: explore scout-hills', 'dim'));
   return lines;
@@ -200,6 +202,7 @@ const HELP = [
   ['decide', 'read the decision that is waiting, with both options and their costs'],
   ['choose <A|B>', 'pick an option'],
   ['rivals', "each rival's strategy, history with you and trust"],
+  ['invite [now]', 'invite the River Clan to share what they know (random: they might teach you, trade, demand tribute, or attack)'],
   ['propose <treaty>', 'offer a deal; in this build: propose disarmament'],
   ['timeline', 'what happened each turn: the date, births, deaths, people who left'],
   ['history', 'past decisions and the consequences that followed'],
@@ -277,6 +280,19 @@ export function createCommands({ data, host }) {
         return res.lines.map((l) => L(l.text, l.kind === 'error' ? 'error' : ''));
       }
 
+      case 'invite': {
+        if (!arg) {
+          const info = game.inviteInfo(state, data);
+          const cost = Object.entries(info.cost).map(([k, v]) => `${v} ${k}`).join(', ');
+          return [L('Invite the River Clan', 'head'), L(info.text),
+            L(info.blocked ? `Not now: ${info.blocked}` : `Ready. It costs ${cost} as a gift. Type "invite now" to send word.`, info.blocked ? 'dim' : '')];
+        }
+        if (arg !== 'now') return [L('Usage: invite now', 'error')];
+        const res = game.invite(state, data);
+        if (res.ok) after('invite');
+        return res.lines.map((l) => L(l.text, l.kind === 'error' ? 'error' : l.kind === 'alert' ? 'alert' : ''));
+      }
+
       case 'choose': {
         const res = game.choose(state, data, arg);
         if (res.ok) after('choose');
@@ -351,7 +367,7 @@ export function createCommands({ data, host }) {
       if (done.length === 1) {
         candidates = {
           build: game.availableStructures(state, data).map((s) => s.id), explore: (data.expeditions || []).map((e) => e.id), choose: ['A', 'B'], propose: game.TREATIES,
-          reveal: ['rules'], set: ['theme', 'speed', 'rule'], history: ['all'], timeline: ['all'], reset: ['confirm'],
+          reveal: ['rules'], set: ['theme', 'speed', 'rule'], history: ['all'], timeline: ['all'], reset: ['confirm'], invite: ['now'],
         }[c] || [];
       } else if (done.length === 2 && c === 'set') {
         candidates = { theme: THEMES, speed: SPEEDS, rule: Object.keys(state.rules) }[a] || [];

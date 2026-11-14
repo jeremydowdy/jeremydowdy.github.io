@@ -104,7 +104,7 @@ test('a pledge to disarm is accepted at normal trust and broken pledges cost ext
 
 test('reaching the knowledge threshold ends the slice once, with a score', async () => {
   const s = game.newGame('K', 'know', data);
-  s.knowledge = data.eras[0].advanceAt.knowledge - 0.1; s.structures.campfire = 3;
+  s.knowledge = data.eras[0].advanceAt.knowledge + 5; s.structures.campfire = 3;
   const out = game.advance(s, data, 2);
   assert.ok(s.flags.eraReady);
   assert.equal(out.lines.filter((l) => l.kind === 'era').length, 1);

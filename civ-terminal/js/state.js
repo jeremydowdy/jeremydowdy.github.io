@@ -1,7 +1,7 @@
 // The game state: one plain, JSON-serializable object.
 import { hashSeed } from './rng.js';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 export const NAME_PATTERN = /^[A-Za-z0-9 -]{1,24}$/;
 
 export function validateName(raw) {
@@ -28,16 +28,21 @@ export function createState({ name, seed, data }) {
     turn: 1,
     clock: { year: 1, step: 0 },   // the calendar: which year, and which season of it
     era: data.eras[0].id,
-    pop: rules.startPopulation,   // adults: they forage, gather wood and learn
+    pop: rules.startPopulation,   // adults (men and women): they forage, gather wood and learn
+    women: Math.min(rules.startWomen, rules.startPopulation),   // how many of the adults are women
+    pregnancies: Array.from({ length: Math.min(rules.startWomen, rules.startPopulation) },
+      (_, i) => 2 + (i % 3)),     // each pregnancy is the turn it comes due; everyone starts pregnant
+    resting: [],                  // mothers recovering: the turn each can conceive again
     kids: 0,                      // children: they eat, but don't work until they grow up
-    cohorts: [],                  // children by birth turn, oldest first: { born, n }
+    cohorts: [],                  // children by birth turn, oldest first: { born, m, f }
+    cooldowns: { invite: data.events?.invite?.firstReadyTurn ?? 5, prompted: false },
     food: rules.startFood,
     energy: rules.startEnergy,
     knowledge: 0,
     stability: rules.stabilityRest,
     arms: 0,
     structures: {},
-    mods: { foodPerTurn: 0, energyPerTurn: 0, knowledgePerTurn: 0, knowledgeMult: 1, stabilityPerTurn: 0, forageMult: 1, spoilMult: 1 },
+    mods: { foodPerTurn: 0, energyPerTurn: 0, knowledgePerTurn: 0, knowledgeMult: 1, stabilityPerTurn: 0, forageMult: 1, spoilMult: 1, coldMult: 1 },
     flags: {},
     discovered: [],   // ids of discoveries made
     parties: [],      // expedition parties away: { id, start, due, people }
@@ -71,7 +76,20 @@ export function migrate(obj, data) {
     obj.rules = obj.rulesModified ? { ...fresh, ...Object.fromEntries(Object.entries(obj.rules).filter(([k]) => k in fresh)) } : fresh;
     obj.v = 3;
   }
+  if (obj.v === 3) upgradeFromV3(obj, data);
   return obj;
+}
+
+function upgradeFromV3(obj, data) {
+  const fresh = ruleValues(data.rules);
+  obj.women = Math.round(obj.pop / 2);
+  obj.pregnancies = []; obj.resting = [];
+  obj.cohorts = (obj.cohorts || []).map((c) => ({ born: c.born, m: Math.ceil(c.n / 2), f: Math.floor(c.n / 2) }));
+  obj.parties = (obj.parties || []).map((p) => ({ ...p, m: p.people, f: 0 }));
+  obj.cooldowns = { invite: Math.max(obj.turn + 2, 5), prompted: false };
+  obj.mods = { coldMult: 1, ...obj.mods };
+  obj.rules = obj.rulesModified ? { ...fresh, ...Object.fromEntries(Object.entries(obj.rules).filter(([k]) => k in fresh)) } : fresh;
+  obj.v = 4;
 }
 
 export function isValidSave(obj) {

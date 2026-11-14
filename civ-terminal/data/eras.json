@@ -4,7 +4,7 @@
     "name": "Stone Age",
     "intro": "A small band camps where a river leaves the hills. They forage, fish and keep a fire going.",
     "advanceAt": {
-      "knowledge": 60
+      "knowledge": 130
     },
     "next": null,
     "clock": {
@@ -18,7 +18,9 @@
           "tint": [
             "#a8ff9a",
             0.05
-          ]
+          ],
+          "fish": 1.0,
+          "hunt": 0.8
         },
         {
           "name": "Summer",
@@ -28,7 +30,9 @@
           "tint": [
             "#ffe08a",
             0.07
-          ]
+          ],
+          "fish": 1.4,
+          "hunt": 0.7
         },
         {
           "name": "Autumn",
@@ -38,7 +42,9 @@
           "tint": [
             "#ff9a4a",
             0.13
-          ]
+          ],
+          "fish": 1.15,
+          "hunt": 1.6
         },
         {
           "name": "Winter",
@@ -49,7 +55,9 @@
           "tint": [
             "#dbe8ff",
             0.3
-          ]
+          ],
+          "fish": 0.4,
+          "hunt": 1.0
         }
       ]
     }

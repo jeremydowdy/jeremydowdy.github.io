@@ -38,7 +38,21 @@
                     <div id="clock" class="clock" aria-hidden="true"></div>
                     <div id="banner" class="banner" role="status" aria-live="polite"></div>
                 </div>
+<section class="panel timepanel" aria-labelledby="timeH">
+                    <h2 id="timeH">Time</h2>
+                    <div class="row">
+                        <button type="button" class="btn primary" id="btnNext">&#9654; Next turn</button>
+                        <button type="button" class="btn" id="btnFive">&#9193; 5 turns</button>
+                    </div>
+                    <p class="hint" id="timeHint"></p>
+                </section>
+
                 <p class="goal" id="goal"></p>
+
+<section class="panel buildpanel" aria-labelledby="buildH">
+                    <h2 id="buildH">Build</h2>
+                    <div class="cards" id="buildGrid"></div>
+                </section>
 
                 <section class="panel timeline" aria-labelledby="tlH">
                     <h2 id="tlH">Timeline</h2>
@@ -50,19 +64,14 @@
             </section>
 
             <aside class="side" aria-label="Actions">
-                <section class="panel" aria-labelledby="timeH">
-                    <h2 id="timeH">Time</h2>
-                    <div class="row">
-                        <button type="button" class="btn primary" id="btnNext">&#9654; Next turn</button>
-                        <button type="button" class="btn" id="btnFive">&#9193; 5 turns</button>
-                    </div>
-                    <p class="hint" id="timeHint"></p>
+                
+
+                <section class="panel" aria-labelledby="ledH">
+                    <h2 id="ledH">Food &amp; wood, per turn</h2>
+                    <div id="ledger"></div>
                 </section>
 
-                <section class="panel" aria-labelledby="buildH">
-                    <h2 id="buildH">Build</h2>
-                    <div class="cards" id="buildGrid"></div>
-                </section>
+                
 
                 <section class="panel" aria-labelledby="expH">
                     <h2 id="expH">Expeditions</h2>
@@ -73,6 +82,12 @@
                     <h2 id="rivH">Rivals</h2>
                     <div id="rivalList"></div>
                 </section>
+
+                <details class="panel more" id="discBox" open>
+                    <summary>Discoveries</summary>
+                    <p class="hint">What your people have learned, and what comes next as knowledge grows.</p>
+                    <ol class="disc" id="discList"></ol>
+                </details>
 
                 <details class="panel more" id="rulesBox">
                     <summary>The rules underneath</summary>

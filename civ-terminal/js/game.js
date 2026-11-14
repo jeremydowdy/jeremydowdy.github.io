@@ -1,6 +1,7 @@
 // Game actions. Everything here is pure logic on the state object, so it
 // runs the same in the browser and in the tests.
-import { tick, applyEffects, capacity, clockInfo, people } from './economy.js';
+import { tick, applyEffects, capacity, clockInfo, people, men, removeMen, removeWomen } from './economy.js';
+import { invite as doInvite, inviteInfo as getInviteInfo, eventCard, chooseEvent } from './events.js';
 import { dueDilemma } from './dilemmas.js';
 import * as armsRace from './gametheory/armsRace.js';
 import { rivalMove, treatyAccepted, updateTrust } from './rivals.js';
@@ -15,6 +16,8 @@ export function newGame(name, seed, data) {
 
 export const eraOf = (state, data) => data.eras.find((e) => e.id === state.era);
 export const calendar = clockInfo;
+export const invite = doInvite;
+export const inviteInfo = getInviteInfo;
 
 const eraIndex = (data, id) => data.eras.findIndex((e) => e.id === id);
 
@@ -56,6 +59,10 @@ export function structureList(state, data) {
 
 // The next thing knowledge is working toward.
 export function nextGoal(state, data) {
+  if (state.flags.eraReady) {
+    const era = eraOf(state, data);
+    return { at: era.advanceAt.knowledge, label: era.name, kind: 'done' };
+  }
   const next = (data.discoveries || []).filter((d) => !state.discovered.includes(d.id) && d.era === state.era)
     .sort((a, b) => a.at.knowledge - b.at.knowledge)[0];
   if (next) return { at: next.at.knowledge, label: next.name, kind: 'discovery' };
@@ -92,12 +99,16 @@ function trigger(state, data, lines) {
       lines.push({ kind: 'era', text: `The ${next.name} begins. ${next.intro}` });
     } else {
       state.history.push({ turn: state.turn, kind: 'era', text: `Ready to leave the ${era.name}. Score at this point: ${score(state)}.` });
-      lines.push({ kind: 'era', text: `Your people know enough to leave the ${era.name}. The next era isn't built yet, so this is the end of the current build. Score: ${score(state)}. You can keep playing.` });
+      lines.push({ kind: 'era', text: `You have mastered the ${era.name}. The next era isn't built yet, so this is the end of what can be played for now. Score: ${score(state)}. Keep playing to grow the band and the score.` });
     }
   }
   if (state.turn >= 3 && !state.flags.exploreHint && !state.parties.length && !state.history.some((h) => h.kind === 'expedition')) {
     state.flags.exploreHint = true;
     lines.push({ kind: 'alert', text: 'Some of the band want to see what lies beyond the hills. Open Expeditions to send a party out. They come back with knowledge.' });
+  }
+  if (state.rivals.length && !state.cooldowns.prompted && state.turn >= state.cooldowns.invite && !state.dilemma && !state.over) {
+    state.cooldowns.prompted = true;
+    lines.push({ kind: 'alert', text: `Smoke rises from the ${state.rivals[0].name}'s camp. You could invite them to share what they know. It might go well, or it might not.` });
   }
   if (state.dilemma) return;
   const rival = state.rivals[0];
@@ -136,6 +147,7 @@ export function advance(state, data, n = 1) {
 export function currentCard(state, data) {
   const d = state.dilemma;
   if (!d) return null;
+  if (d.type === 'event') return eventCard(state, data, d.id);
   if (d.type === 'armsRace') {
     const rival = rivalById(state, d.rival);
     const R = state.rules;
@@ -162,6 +174,12 @@ export function choose(state, data, key) {
   key = String(key || '').toUpperCase();
   if (key !== 'A' && key !== 'B') return { ok: false, lines: [{ kind: 'error', text: 'Choose A or B.' }] };
   const lines = [];
+
+  if (d.type === 'event') {
+    lines.push(...chooseEvent(state, data, d.id, key));
+    state.dilemma = null;
+    return { ok: true, lines };
+  }
 
   if (d.type === 'armsRace') {
     const rival = rivalById(state, d.rival);
@@ -230,11 +248,15 @@ export function expeditionList(state, data) {
   return (data.expeditions || []).map((e) => {
     const missing = Object.entries(e.cost).filter(([k, v]) => state[k] < v).map(([k, v]) => ({ resource: k, need: v, have: Math.floor(state[k]) }));
     const tooFew = state.pop < e.people + 4;
-    const locked = state.knowledge < (e.minKnowledge || 0);
+    const spareWomen = state.women - state.pregnancies.length;
+    const canCrew = men(state) + Math.max(0, spareWomen) >= e.people;
+    const locked = state.knowledge < (e.minKnowledge || 0) || !!(e.requiresFlag && !state.flags[e.requiresFlag]);
     let blocked = null;
-    if (locked) blocked = `Needs ${e.minKnowledge} knowledge.`;
+    if (e.requiresFlag && !state.flags[e.requiresFlag]) blocked = 'You have not found out about this yet.';
+    else if (locked) blocked = `Needs ${e.minKnowledge} knowledge.`;
     else if (away) blocked = 'A party is already out.';
     else if (tooFew) blocked = `Needs ${e.people + 4} people (so ${e.people} can go and 4 stay).`;
+    else if (!canCrew) blocked = 'Not enough people who can go (pregnant women stay).';
     else if (missing.length) blocked = `Needs ${missing.map((m) => `${m.need} ${m.resource}`).join(' and ')}.`;
     return { ...e, locked, missing, blocked, available: !blocked };
   });
@@ -249,8 +271,11 @@ export function explore(state, data, id) {
   const spend = {};
   for (const [k, v] of Object.entries(e.cost)) spend[k] = -v;
   applyEffects(state, spend);
-  state.pop -= e.people;
-  state.parties.push({ id: e.id, start: state.turn, due: state.turn + e.turns - 1, people: e.people });
+  // Hunters and travelers are mostly men; women who aren't pregnant fill the rest.
+  const m = Math.min(men(state), e.people), f = e.people - m;
+  removeMen(state, m);
+  removeWomen(state, f, { keepPregnant: true });
+  state.parties.push({ id: e.id, start: state.turn, due: state.turn + e.turns - 1, people: e.people, m, f });
   const paid = Object.entries(e.cost).map(([k, v]) => `${v} ${k}`).join(' and ');
   state.history.push({ turn: state.turn, kind: 'expedition', text: `Sent out "${e.name}" (${e.people} people, ${e.turns} turns, ${paid}).` });
   return { ok: true, expedition: e, lines: [{ kind: 'result', text: `${e.text} They set out with ${paid}, and should be back in ${e.turns} turns.` }] };

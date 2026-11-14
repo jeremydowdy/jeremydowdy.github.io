@@ -43,7 +43,7 @@ const LOG_CLASS = { alert: 'alert', era: 'era', discovery: 'discovery', error: '
 function logLines(lines) {
   for (const l of lines) {
     let cls = LOG_CLASS[l.kind] ?? '';
-    if (l.kind === 'event' && l.tone) cls = l.tone;
+    if (l.tone) cls = l.tone;
     ui.log(l.text, cls, state.turn);
     if (l.kind === 'discovery' || l.kind === 'era') ui.banner(l.text.split('. ')[0].replace(/\.$/, ''));
   }
@@ -92,6 +92,11 @@ const actions = {
     const res = game.choose(state, data, key);
     logLines(res.lines);
     if (res.ok) refresh('choose');
+  },
+  invite() {
+    const res = game.invite(state, data);
+    logLines(res.lines);
+    if (res.ok) refresh('invite');
   },
   propose() {
     const res = game.propose(state, data, 'disarmament');

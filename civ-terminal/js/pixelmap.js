@@ -28,8 +28,9 @@ export function createPixelMap(canvas, { seed, reducedMotion = false }) {
   let raf = 0, last = 0, acc = 0, time = 0, running = false;
   let pulses = [];
   let partyPos = null;
-  const sprites = { campfire: makeSprite('campfire'), shelter: makeSprite('shelter'), 'drying-rack': makeSprite('drying-rack'),
-    oak: makeSprite('oak'), pine: makeSprite('pine'), bush: makeSprite('bush') };
+  const STRUCTURES = ['campfire', 'shelter', 'drying-rack', 'fish-trap', 'woodcutters-camp', 'hunting-camp', 'healers-hut', 'story-circle', 'dugout-canoe', 'storage-pit'];
+  const sprites = { oak: makeSprite('oak'), pine: makeSprite('pine'), bush: makeSprite('bush') };
+  for (const id of STRUCTURES) sprites[id] = makeSprite(id);
 
   const toPx = (p) => ({ x: p.x * W, y: p.y * H });
 
@@ -109,19 +110,33 @@ export function createPixelMap(canvas, { seed, reducedMotion = false }) {
     return { x: Math.min(W - 8, Math.max(8, cu + dx)), y: Math.min(H - 8, Math.max(10, y)) };
   }
 
-  // Spot number i for a kind of structure. Positions only depend on the seed,
-  // so structures never jump around as more are built.
+  // Where each kind of structure goes, as rings around the camp. Positions only
+  // depend on the seed, so structures never jump around as more are built.
+  const RINGS = {
+    shelter: { r0: 25, step: 5.5, a0: 1.3, squash: 0.75 },
+    'woodcutters-camp': { r0: 54, step: 5, a0: 3.8, squash: 0.7 },
+    'hunting-camp': { r0: 48, step: 5, a0: 5.1, squash: 0.7 },
+    'healers-hut': { r0: 34, step: 4.5, a0: 2.0, squash: 0.75 },
+    'story-circle': { r0: 17, step: 4, a0: 4.4, squash: 0.8 },
+    'storage-pit': { r0: 31, step: 4.5, a0: 0.2, squash: 0.75 },
+  };
+
   function slot(kind, i) {
     const c = campPx();
     if (kind === 'campfire') {
       const r = 7 + 4.2 * Math.sqrt(i), a = i * 2.4 + 0.6;
       return fixSide(c.x + Math.cos(a) * r, c.y + Math.sin(a) * r * 0.8);
     }
-    if (kind === 'shelter') {
-      const r = 25 + 5.5 * Math.sqrt(i), a = i * 2.4 + 1.3;
-      return fixSide(c.x + Math.cos(a) * r, c.y + Math.sin(a) * r * 0.75);
+    if (RINGS[kind]) {
+      const g = RINGS[kind], r = g.r0 + g.step * Math.sqrt(i), a = i * 2.4 + g.a0;
+      return fixSide(c.x + Math.cos(a) * r, c.y + Math.sin(a) * r * g.squash);
     }
-    const dv = (i % 2 ? 1 : -1) * (14 + 11 * Math.floor(i / 2));
+    if (kind === 'fish-trap' || kind === 'dugout-canoe') {           // these sit in the river itself
+      const dv = (i % 2 ? 1 : -1) * ((kind === 'fish-trap' ? 9 : 17) + 10 * Math.floor(i / 2));
+      const y = Math.min(H - 6, Math.max(10, c.y + dv));
+      return { x: bankX(y) + (kind === 'dugout-canoe' ? world.side * 1 : 0), y: y + 3 };
+    }
+    const dv = (i % 2 ? 1 : -1) * (14 + 11 * Math.floor(i / 2));      // drying racks along the bank
     const y = c.y + dv;
     return fixSide(bankX(y) + world.side * 20, y);
   }

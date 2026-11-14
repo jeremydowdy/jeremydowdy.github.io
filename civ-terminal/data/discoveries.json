@@ -1,21 +1,155 @@
 [
   {
+    "id": "fishing",
+    "name": "Fishing",
+    "era": "stone",
+    "at": {
+      "knowledge": 4
+    },
+    "text": "Someone noticed fish crowding the shallows. Woven traps can pull food out of the river.",
+    "effects": {},
+    "unlocks": [
+      "fish-trap"
+    ]
+  },
+  {
+    "id": "stone-tools",
+    "name": "Stone tools",
+    "era": "stone",
+    "at": {
+      "knowledge": 6
+    },
+    "text": "Chipped stone edges cut wood and bone, and digging sticks improve gathering. Woodcutters can bring in wood faster.",
+    "effects": {
+      "mods": {
+        "forageMult": 0.1
+      }
+    },
+    "unlocks": [
+      "woodcutters-camp"
+    ]
+  },
+  {
     "id": "cooking",
     "name": "Cooking",
     "era": "stone",
-    "at": { "knowledge": 8 },
+    "at": {
+      "knowledge": 8
+    },
     "text": "Someone dropped meat into the embers and ate it. Cooked food feeds more, and meals around the fire become lessons: knowledge now spreads faster.",
-    "effects": { "mods": { "knowledgeMult": 0.3 } },
-    "boost": { "campfire": { "food": 0.5 } },
+    "effects": {
+      "mods": {
+        "knowledgeMult": 0.3
+      }
+    },
+    "boost": {
+      "campfire": {
+        "food": 0.5
+      }
+    },
     "unlocks": []
+  },
+  {
+    "id": "spears",
+    "name": "Spears",
+    "era": "stone",
+    "at": {
+      "knowledge": 10
+    },
+    "text": "Stone points lashed to long shafts. Hunters can bring down game, and the best season for it is autumn.",
+    "effects": {},
+    "unlocks": [
+      "hunting-camp"
+    ]
   },
   {
     "id": "crafts",
     "name": "Hide and pole work",
     "era": "stone",
-    "at": { "knowledge": 15 },
+    "at": {
+      "knowledge": 15
+    },
     "text": "Your people learn to lash poles and stretch hides. Shelters and drying racks can now be built.",
     "effects": {},
-    "unlocks": ["shelter", "drying-rack"]
+    "unlocks": [
+      "shelter",
+      "drying-rack"
+    ]
+  },
+  {
+    "id": "herbal",
+    "name": "Herbal lore",
+    "era": "stone",
+    "at": {
+      "knowledge": 20
+    },
+    "text": "The women who deliver babies share which herbs ease fever and pain. A healer's hut can keep people alive.",
+    "effects": {},
+    "unlocks": [
+      "healers-hut"
+    ]
+  },
+  {
+    "id": "oral",
+    "name": "Oral tradition",
+    "era": "stone",
+    "at": {
+      "knowledge": 28
+    },
+    "text": "Stories, songs and names: what one person learns, the whole band can keep. Knowledge spreads faster, and a story circle holds people together.",
+    "effects": {
+      "mods": {
+        "knowledgeMult": 0.1
+      }
+    },
+    "unlocks": [
+      "story-circle"
+    ]
+  },
+  {
+    "id": "canoes",
+    "name": "Dugout canoes",
+    "era": "stone",
+    "at": {
+      "knowledge": 40
+    },
+    "text": "Hollowed logs float. Fishers can reach deeper water and bigger runs.",
+    "effects": {},
+    "unlocks": [
+      "dugout-canoe"
+    ]
+  },
+  {
+    "id": "pottery",
+    "name": "Pottery",
+    "era": "stone",
+    "at": {
+      "knowledge": 60
+    },
+    "text": "Fired clay holds water and keeps food dry. Less of your stores spoil, and storage pits are possible.",
+    "effects": {
+      "mods": {
+        "spoilMult": -0.4
+      }
+    },
+    "unlocks": [
+      "storage-pit"
+    ]
+  },
+  {
+    "id": "clothing",
+    "name": "Warm clothing",
+    "era": "stone",
+    "at": {
+      "knowledge": 80
+    },
+    "text": "Sewn hides and fur keep people alive through the cold. Winters will be kinder.",
+    "effects": {
+      "mods": {
+        "coldMult": -0.35,
+        "stabilityPerTurn": 0.1
+      }
+    },
+    "unlocks": []
   }
 ]

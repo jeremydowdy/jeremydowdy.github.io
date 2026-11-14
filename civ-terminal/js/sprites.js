@@ -9,7 +9,7 @@ export const PALETTE = {
   g: '#2f8a45', G: '#1f6232',
   f: '#f09a80', F: '#d96a50',
   b: '#3f9a4e', R: '#e04a48',
-  x: '#ffd166', w: '#f4f4f4',
+  x: '#ffd166', w: '#f4f4f4', B: '#3f7be0',
 };
 
 export const SPRITES = {
@@ -67,6 +67,57 @@ export const SPRITES = {
     'ggGgggg',
     '...t...',
     '...t...',
+  ]],
+  'fish-trap': [[
+    '..kkk..',
+    '.k.f.k.',
+    'k..f..k',
+    'kkkkkkk',
+    '.BBBBB.',
+  ]],
+  'woodcutters-camp': [[
+    '.........',
+    '..kkkkk..',
+    '.kkHkHkk.',
+    'kkkkkkkkk',
+    'kHkkkHkkk',
+    'kkkkkkkkk',
+  ]],
+  'hunting-camp': [[
+    '...s.s...',
+    '...k.k...',
+    '..k.k.k..',
+    '.k..k..k.',
+    'k...k...k',
+    'hhhhhhhhh',
+  ]],
+  'healers-hut': [[
+    '....k....',
+    '...lll...',
+    '..lllll..',
+    '.lllLlll.',
+    'hhhhdhhhh',
+    'hhhhdhhhh',
+  ]],
+  'story-circle': [[
+    '.s.s.s.s.',
+    's.......s',
+    's...o...s',
+    's.......s',
+    '.s.s.s.s.',
+  ]],
+  'dugout-canoe': [[
+    '.........',
+    '.kkkkkkk.',
+    'kHHHHHHHk',
+    '.BBBBBBB.',
+  ]],
+  'storage-pit': [[
+    '..hhh..',
+    '.hHHHh.',
+    'hHHHHHh',
+    '.hhhhh.',
+    '..kkk..',
   ]],
   bush: [[
     '.bbbbb.',

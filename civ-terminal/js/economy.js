@@ -1,10 +1,12 @@
 // One turn of the economy. Pure: it only reads and changes `state`.
 //
 // A turn is a stretch of time on the calendar (a season in the Stone Age).
-// Each turn the band forages, eats, learns, and its numbers change by
-// themselves: children are born and grow up, people die, and when people
-// are hungry, crowded or unhappy they leave and take food and knowledge
-// with them. The player's choices push on all of this.
+// Each turn the band gathers, fishes and hunts, eats, learns, and its numbers
+// change by themselves: women get pregnant and give birth, some pregnancies
+// are lost, children grow up, people die, and when people are hungry, crowded
+// or unhappy they leave and take food and knowledge with them. Because births
+// come from how many women there are, a bigger band grows faster: growth is
+// exponential until food or room runs short.
 import { nextRandom } from './rng.js';
 
 const round1 = (x) => Math.round(x * 10) / 10;
@@ -39,6 +41,7 @@ function advanceClock(state, data) {
 
 // ---------------------------------------------------------------- people
 export const people = (state) => state.pop + state.kids;
+export const men = (state) => state.pop - state.women;
 
 export function capacity(state, data) {
   let cap = state.rules.baseCapacity;
@@ -51,10 +54,33 @@ export function foodNeed(state) {
   return state.pop * state.rules.eatPerPerson + state.kids * state.rules.childEat;
 }
 
-function addKids(state, n, turn) {
-  if (n <= 0) return;
-  state.cohorts.push({ born: turn, n });
-  state.kids += n;
+// Several of the same thing give less each time: n copies are worth
+// (1 - d^n) / (1 - d) of the first, for d below 1.
+const worth = (n, d) => (d && d < 1 ? (1 - Math.pow(d, n)) / (1 - d) : n);
+
+// How much healers' huts cut deaths and lost pregnancies (1 = not at all).
+export function healthFactor(state, data) {
+  let f = 1;
+  for (const s of data.structures) if (s.health) f *= Math.pow(1 - s.health, state.structures[s.id] || 0);
+  return Math.max(0.35, f);
+}
+
+function addKids(state, m, f, turn) {
+  if (m + f <= 0) return;
+  state.cohorts.push({ born: turn, m, f });
+  state.kids += m + f;
+}
+
+// Takes `k` children out of one group, keeping the boy/girl split fair.
+function takeFromCohort(state, c, k) {
+  const total = c.m + c.f;
+  k = Math.min(k, total);
+  if (k <= 0) return 0;
+  let boys = Math.min(c.m, Math.round(k * c.m / total));
+  let girls = k - boys;
+  if (girls > c.f) { girls = c.f; boys = k - girls; }
+  c.m -= boys; c.f -= girls; state.kids -= k;
+  return k;
 }
 
 // Takes children away, youngest first. Returns how many were removed.
@@ -63,9 +89,8 @@ function removeKids(state, n) {
   const removed = left;
   while (left > 0 && state.cohorts.length) {
     const c = state.cohorts[state.cohorts.length - 1];
-    const take = Math.min(c.n, left);
-    c.n -= take; left -= take; state.kids -= take;
-    if (!c.n) state.cohorts.pop();
+    left -= takeFromCohort(state, c, left);
+    if (c.m + c.f <= 0) state.cohorts.pop();
   }
   return removed;
 }
@@ -73,8 +98,49 @@ function removeKids(state, n) {
 function matureKids(state, turn) {
   while (state.cohorts.length && turn - state.cohorts[0].born >= state.rules.matureTurns) {
     const c = state.cohorts.shift();
-    state.kids -= c.n; state.pop += c.n;
+    state.kids -= c.m + c.f; state.pop += c.m + c.f; state.women += c.f;
   }
+}
+
+// Keeps the pregnancy and rest lists consistent with how many women there are.
+function settleWomen(state) {
+  state.women = clamp(state.women, 0, state.pop);
+  if (state.pregnancies.length > state.women) state.pregnancies.length = state.women;
+  const room = state.women - state.pregnancies.length;
+  if (state.resting.length > room) state.resting.length = Math.max(0, room);
+}
+
+// Women die or leave. A pregnant woman takes her pregnancy with her.
+export function removeWomen(state, n, { keepPregnant = false } = {}) {
+  let gone = 0;
+  for (let i = 0; i < n && state.women > 0; i++) {
+    const preg = state.pregnancies.length;
+    const pregnant = !keepPregnant && preg > 0 && nextRandom(state) < preg / state.women;
+    if (pregnant) state.pregnancies.pop();
+    state.women -= 1; state.pop -= 1; gone += 1;
+    settleWomen(state);
+  }
+  return gone;
+}
+
+export function removeMen(state, n) {
+  const gone = Math.min(n, men(state));
+  state.pop -= gone;
+  return gone;
+}
+
+// Adults leave or die, women and men in proportion to how many there are.
+export function removeAdults(state, n) {
+  let gone = 0;
+  for (let i = 0; i < n && state.pop > 0; i++) {
+    const woman = state.women > 0 && nextRandom(state) < state.women / state.pop;
+    gone += woman ? removeWomen(state, 1) : removeMen(state, 1);
+  }
+  return gone;
+}
+
+export function addAdults(state, n) {
+  for (let i = 0; i < n; i++) { state.pop += 1; if (nextRandom(state) < 0.5) state.women += 1; }
 }
 
 // A whole number that averages out to `expected`: 2.3 is usually 2, sometimes 3.
@@ -85,40 +151,69 @@ function roll(state, expected) {
 }
 
 // ---------------------------------------------------------------- production
-function structureGains(state, data) {
-  const g = { food: 0, energy: 0, knowledge: 0, stability: 0 };
+// Everything the band makes and uses in a turn, line by line, so the player
+// can see where food and wood come from and where they go.
+export function ledger(state, data, weather = 1) {
+  const R = state.rules;
+  const { season } = clockInfo(state, data);
+  const crowd = R.landCapacity / (R.landCapacity + state.pop);
+  const foodIn = [], energyIn = [];
+  const add = (list, label, amount) => { if (Math.abs(amount) > 0.005) list.push({ label, amount }); };
+
+  add(foodIn, 'Gathering', R.foragePerPerson * state.pop * crowd * weather * (season.forage ?? 1) * state.mods.forageMult);
+  // Wood is finite too: the nearest trees are cut first, so each extra person brings in less.
+  add(energyIn, 'Gathering wood', state.pop * R.laborEnergy * (R.woodCapacity / (R.woodCapacity + state.pop)));
+
   for (const s of data.structures) {
     const n = state.structures[s.id] || 0;
     if (!n || !s.perTurn) continue;
-    for (const k of Object.keys(g)) g[k] += n * (s.perTurn[k] || 0);
+    const eff = worth(n, s.diminish);
+    const mult = s.seasonKey ? (season[s.seasonKey] ?? 1) : 1;
+    const label = n > 1 ? `${s.name} x${n}` : s.name;
+    add(foodIn, label, (s.perTurn.food || 0) * eff * mult);
+    add(energyIn, label, (s.perTurn.energy || 0) * eff);
   }
   // Discoveries can improve what a structure gives (cooking makes fires feed people).
   for (const d of data.discoveries || []) {
     if (!state.discovered.includes(d.id) || !d.boost) continue;
     for (const [id, per] of Object.entries(d.boost)) {
       const n = state.structures[id] || 0;
-      for (const k of Object.keys(g)) g[k] += n * (per[k] || 0);
+      if (n) { add(foodIn, `${d.name} at the fires`, n * (per.food || 0)); add(energyIn, d.name, n * (per.energy || 0)); }
     }
   }
-  return g;
+  add(foodIn, 'Decisions', state.mods.foodPerTurn);
+  add(energyIn, 'Decisions', state.mods.energyPerTurn);
+
+  const foodOut = [];
+  add(foodOut, 'Adults eat', -state.pop * R.eatPerPerson);
+  add(foodOut, 'Children eat', -state.kids * R.childEat);
+  add(foodOut, 'Upkeep of arms', -state.arms * R.armsUpkeep);
+
+  const sum = (list) => list.reduce((n, x) => n + x.amount, 0);
+  return { season, food: { in: foodIn, out: foodOut, net: sum(foodIn) + sum(foodOut) }, energy: { in: energyIn, net: sum(energyIn) } };
 }
 
-// Food produced by foraging. Each extra forager finds a little less.
-export function forage(state, weather = 1) {
-  const R = state.rules;
-  const crowding = R.landCapacity / (R.landCapacity + state.pop);
-  return R.foragePerPerson * state.pop * crowding * weather * state.mods.forageMult;
+// Knowledge and stability from structures (food and wood are in the ledger).
+function structureGains(state, data) {
+  const g = { knowledge: 0, stability: 0 };
+  for (const s of data.structures) {
+    const n = state.structures[s.id] || 0;
+    if (!n || !s.perTurn) continue;
+    const eff = worth(n, s.diminish);
+    for (const k of Object.keys(g)) g[k] += eff * (s.perTurn[k] || 0);
+  }
+  return g;
 }
 
 // Expected change per turn with average weather, this season (spoilage,
 // famine, births and deaths are not included).
 export function forecast(state, data) {
   const R = state.rules;
+  const L = ledger(state, data);
   const g = structureGains(state, data);
-  const { season } = clockInfo(state, data);
   return {
-    food: forage(state, season.forage ?? 1) + g.food + state.mods.foodPerTurn - foodNeed(state) - state.arms * R.armsUpkeep,
-    energy: state.pop * R.laborEnergy + g.energy + state.mods.energyPerTurn,
+    food: L.food.net,
+    energy: L.energy.net,
     knowledge: (state.pop * R.knowledgePerPerson + g.knowledge + state.mods.knowledgePerTurn) * state.mods.knowledgeMult
       - state.knowledge * R.knowledgeDecay,
   };
@@ -130,8 +225,11 @@ export function foodForecast(state, data) {
 
 // Apply a bundle of effects: instant changes, rival trust, and lasting modifiers.
 export function applyEffects(state, fx = {}) {
-  for (const k of ['pop', 'food', 'energy', 'knowledge', 'stability']) {
+  for (const k of ['food', 'energy', 'knowledge', 'stability']) {
     if (typeof fx[k] === 'number') state[k] += fx[k];
+  }
+  if (typeof fx.pop === 'number' && fx.pop !== 0) {
+    if (fx.pop < 0) removeAdults(state, Math.round(-fx.pop)); else addAdults(state, Math.round(fx.pop));
   }
   if (typeof fx.trust === 'number') {
     for (const r of state.rivals) r.trust = clamp(r.trust + fx.trust, 0, 100);
@@ -149,6 +247,7 @@ export function tidy(state) {
   state.energy = Math.max(0, round1(state.energy));
   state.knowledge = Math.max(0, round1(state.knowledge));
   state.stability = clamp(round1(state.stability), 0, 100);
+  settleWomen(state);
 }
 
 // ---------------------------------------------------------------- one turn
@@ -163,13 +262,13 @@ export function tick(state, data) {
   const season = clock.season;
   const g = structureGains(state, data);
   const cap = capacity(state, data);
+  const health = healthFactor(state, data);
   const rec = { turn: state.turn, label: clock.label, year: clock.year, season: season.name, cold: !!season.cold,
-    born: 0, died: 0, left: 0 };
+    born: 0, died: 0, left: 0, lost: 0 };
 
-  // Food: forage, then eat. Each season forages differently.
+  // Food: gather, fish and hunt, then eat. Each season gives different amounts.
   const weather = 1 + (nextRandom(state) * 2 - 1) * R.weatherSwing;
-  state.food += forage(state, weather * (season.forage ?? 1)) + g.food + state.mods.foodPerTurn
-    - foodNeed(state) - state.arms * R.armsUpkeep;
+  state.food += ledger(state, data, weather).food.net;
 
   if (state.food < 0) {
     // Famine. Children are hit harder than adults.
@@ -178,7 +277,7 @@ export function tick(state, data) {
     const weight = state.kids * R.childVulnerability;
     const kidsDead = Math.min(state.kids, Math.round(dead * weight / ((weight + state.pop) || 1)));
     removeKids(state, kidsDead);
-    state.pop -= Math.min(state.pop, dead - kidsDead);
+    removeAdults(state, dead - kidsDead);
     rec.died += dead;
     state.stability -= R.famineUnrest;
     state.food = 0;
@@ -188,35 +287,75 @@ export function tick(state, data) {
     state.food -= state.food * R.spoilage * Math.max(0, state.mods.spoilMult);
   }
 
-  // Ordinary deaths: illness, accidents, age. Winter is harder.
-  const harsh = season.death ?? 1;
-  const adultDeaths = Math.min(state.pop, roll(state, state.pop * R.deathRate * harsh));
-  const kidDeaths = Math.min(state.kids, roll(state, state.kids * R.childDeathRate * harsh));
-  state.pop -= adultDeaths; removeKids(state, kidDeaths);
-  rec.died += adultDeaths + kidDeaths;
-  if (adultDeaths + kidDeaths >= 2) say(`${plural(adultDeaths + kidDeaths, 'person', 'people')} died of sickness${season.cold ? ' and the cold' : ''}.`, 'bad');
+  // How secure the band feels: turns of food in store, after eating.
+  const stockNow = foodNeed(state) > 0 ? state.food / foodNeed(state) : 9;
+  const lean = stockNow < R.hungerTurns;
 
-  // Children grow up, then new ones are born. More food means more births,
-  // and more births mean more mouths to feed.
+  // Ordinary deaths: illness, accidents, age. Winter is harder; healers help.
+  const harsh = (season.death ?? 1) * (season.cold ? state.mods.coldMult ?? 1 : 1) * health;
+  const womenDie = removeWomen(state, Math.min(state.women, roll(state, state.women * R.deathRate * harsh)));
+  const menDie = removeMen(state, Math.min(men(state), roll(state, men(state) * R.deathRate * harsh)));
+  let kidDeaths = 0;
+  for (const c of state.cohorts) {
+    const infant = state.turn - c.born < R.infantTurns ? R.infantDeathRate : 0;
+    const k = Math.min(c.m + c.f, roll(state, (c.m + c.f) * (R.childDeathRate + infant) * harsh));
+    kidDeaths += takeFromCohort(state, c, k);
+  }
+  state.cohorts = state.cohorts.filter((c) => c.m + c.f > 0);
+  rec.died += womenDie + menDie + kidDeaths;
+  if (womenDie + menDie + kidDeaths >= 2) say(`${plural(womenDie + menDie + kidDeaths, 'person', 'people')} died of sickness${season.cold ? ' and the cold' : ''}.`, 'bad');
+
+  // Children grow up.
   matureKids(state, state.turn);
+  settleWomen(state);
+
+  // Pregnancies: some are lost, and at term a baby (sometimes two) is born.
+  state.resting = state.resting.filter((until) => until > state.turn);
+  const going = [];
+  let mothersLost = 0, babiesM = 0, babiesF = 0;
+  for (const due of state.pregnancies) {
+    if (due > state.turn) {
+      if (nextRandom(state) < R.miscarriageRate * (lean ? 2.5 : 1) * health) {
+        rec.lost += 1;
+        state.resting.push(state.turn + 1);
+      } else going.push(due);
+      continue;
+    }
+    const babies = 1 + (nextRandom(state) < R.twinChance ? 1 : 0);
+    for (let b = 0; b < babies; b++) { if (nextRandom(state) < 0.5) babiesM++; else babiesF++; }
+    if (nextRandom(state) < R.birthDeathRate * health * (lean ? 1.5 : 1)) {
+      mothersLost += 1;                                          // she dies; her baby lives
+      state.women -= 1; state.pop -= 1;
+    } else state.resting.push(state.turn + R.restTurns + 1);
+  }
+  state.pregnancies = going;
+  rec.born = babiesM + babiesF;
+  rec.died += mothersLost;
+  addKids(state, babiesM, babiesF, state.turn);
+  settleWomen(state);
+  if (rec.lost) say(`${plural(rec.lost, 'pregnancy was', 'pregnancies were')} lost.`, 'bad');
+  if (mothersLost) say(`${mothersLost === 1 ? 'A mother' : mothersLost + ' mothers'} died giving birth.`, 'bad');
+
+  // New pregnancies. More women means more pregnancies, so a bigger band
+  // grows faster. Fertility falls with hunger, crowding, and too few men.
   const needNow = foodNeed(state);
-  const stock = needNow > 0 ? state.food / needNow : 9;                    // turns of food in store
-  const fed = clamp(stock / R.birthFoodTurns, 0, 1);
+  const fed = clamp((needNow > 0 ? state.food / needNow : 9) / R.birthFoodTurns, 0, 1);
   const over = people(state) > cap ? (people(state) - cap) / cap : 0;
   const room = Math.max(0, 1 - R.crowdBirthDrop * over);
-  rec.born = roll(state, state.pop * R.birthRate * fed * room);
-  addKids(state, rec.born, state.turn);
-  if (rec.born >= 3) say(`A baby boom: ${rec.born} babies born. More mouths to feed.`, 'good');
+  const mates = Math.min(1, men(state) / Math.max(1, state.women * R.mateRatio));
+  const chance = R.conceiveChance * fed * room * mates;
+  const ready = Math.max(0, state.women - state.pregnancies.length - state.resting.length);
+  for (let i = 0; i < ready; i++) if (nextRandom(state) < chance) state.pregnancies.push(state.turn + R.gestation);
+  if (rec.born >= 4) say(`A baby boom: ${rec.born} babies born. More mouths to feed.`, 'good');
 
   // Work and learning: adults only.
-  state.energy += state.pop * R.laborEnergy + g.energy + state.mods.energyPerTurn;
+  state.energy += ledger(state, data).energy.net;
   const learned = (state.pop * R.knowledgePerPerson + g.knowledge + state.mods.knowledgePerTurn) * state.mods.knowledgeMult;
   state.knowledge = state.knowledge * (1 - R.knowledgeDecay) + learned;
 
   // Mood: drifts back to normal, and is pushed down by hunger and crowding.
   const total = people(state);
-  const food2 = foodNeed(state);
-  const secure = food2 > 0 ? state.food / food2 : 9;
+  const secure = foodNeed(state) > 0 ? state.food / foodNeed(state) : 9;
   const hungry = secure < R.hungerTurns, crowded = total > cap;
   let push = (R.stabilityRest - state.stability) * R.stabilityPull + g.stability + state.mods.stabilityPerTurn;
   if (hungry) push -= R.hungerUnrest * (1 - secure / R.hungerTurns);
@@ -230,20 +369,21 @@ export function tick(state, data) {
     const severity = (R.unrestThreshold - state.stability) / R.unrestThreshold;
     const adults = Math.min(state.pop - R.minStay, roll(state, state.pop * R.leaveRate * severity));
     if (adults > 0) {
-      const kids = Math.min(state.kids, Math.round(state.kids * adults / state.pop));
-      const going = adults + kids;
+      const share = adults / state.pop;
+      const kids = Math.min(state.kids, Math.round(state.kids * share));
+      const goingOut = adults + kids;
       const everyone = people(state);
-      const foodTaken = Math.min(state.food, round1(state.food * (going / everyone) * R.leaveFoodShare));
-      const knowTaken = Math.min(state.knowledge, round1(state.knowledge * (adults / state.pop) * R.leaveKnowledge));
-      state.pop -= adults; removeKids(state, kids);
+      const foodTaken = Math.min(state.food, round1(state.food * (goingOut / everyone) * R.leaveFoodShare));
+      const knowTaken = Math.min(state.knowledge, round1(state.knowledge * share * R.leaveKnowledge));
+      removeAdults(state, adults); removeKids(state, kids);
       state.food -= foodTaken; state.knowledge -= knowTaken;
       state.stability += R.leaveRelief;
-      rec.left = going;
+      rec.left = goingOut;
       const why = hungry ? 'hungry' : crowded ? 'crowded' : 'unhappy with how things are going';
       const bits = [];
       if (foodTaken > 0) bits.push(`${round1(foodTaken)} food`);
       if (knowTaken > 0) bits.push(`${round1(knowTaken)} knowledge`);
-      const text = `Fed up (${why}), ${plural(going, 'person', 'people')} walked away` + (kids ? `, ${kids} of them ${kids === 1 ? 'a child' : 'children'}` : '') +
+      const text = `Fed up (${why}), ${plural(goingOut, 'person', 'people')} walked away` + (kids ? `, ${kids} of them ${kids === 1 ? 'a child' : 'children'}` : '') +
         (bits.length ? `, taking ${bits.join(' and ')} with them.` : '.');
       say(text, 'bad'); note('unrest', text);
     }
@@ -265,26 +405,33 @@ export function tick(state, data) {
   state.parties = state.parties.filter((p) => p.due > state.turn);
   for (const p of home) {
     const ex = (data.expeditions || []).find((e) => e.id === p.id);
-    if (!ex) { state.pop += p.people; continue; }
+    let m = p.m ?? p.people, f = p.f ?? 0;
+    if (!ex) { state.pop += m + f; state.women += f; continue; }
     const lost = nextRandom(state) < ex.risk ? 1 : 0;
-    state.pop += p.people - lost;
-    applyEffects(state, ex.reward);
+    if (lost) { if (m > 0) m -= 1; else f -= 1; }
+    state.pop += m + f; state.women += f;
+    applyEffects(state, ex.reward || {});
     const bits = [`${ex.name}: the party is home.`];
     if (ex.reward && ex.reward.knowledge) bits.push(`+${ex.reward.knowledge} knowledge.`);
     if (lost) bits.push(ex.mishap || 'One of the party did not come back.');
-    for (const f of ex.finds || []) {
-      if (nextRandom(state) < f.chance) { applyEffects(state, f.effects); bits.push(f.text); }
+    let bad = !!lost;
+    for (const find of ex.finds || []) {
+      if (nextRandom(state) < find.chance) {
+        applyEffects(state, find.effects); bits.push(find.text);
+        if ((find.effects.pop || 0) < 0 || (find.effects.stability || 0) < 0) bad = true;
+        if (ex.random) break;                                   // a random draw: only one thing happens
+      }
     }
     const text = bits.join(' ');
     note('expedition', text);
-    say(text, lost ? 'bad' : '');
+    say(text, bad ? 'bad' : '');
   }
 
   tidy(state);
 
   // One record per turn: the date and the numbers, for the timeline.
-  state.timeline.push({ ...rec, pop: state.pop, kids: state.kids, food: state.food, knowledge: state.knowledge,
-    stability: state.stability, energy: state.energy });
+  state.timeline.push({ ...rec, pop: state.pop, women: state.women, pregnant: state.pregnancies.length, kids: state.kids,
+    food: state.food, knowledge: state.knowledge, stability: state.stability, energy: state.energy });
   if (state.timeline.length > 1000) state.timeline.shift();
   advanceClock(state, data);
 

@@ -325,3 +325,25 @@ body.play { overflow: auto; height: auto; min-height: 100%; }
     .delta { animation: none; opacity: 1; }
     .chip .bar i, .banner { transition: none; }
 }
+
+/* ---------------------------------------------------------- ledger and discoveries */
+.led { margin-bottom: 8px; }
+.led h3 { margin: 0 0 3px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.row2 { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; padding: 1px 0; }
+.row2 .up { color: var(--good); }
+.row2 .down { color: var(--bad); }
+.row2.total { border-top: 1px dotted var(--line); margin-top: 2px; padding-top: 3px; font-weight: 700; }
+.disc { list-style: none; margin: 8px 0 0; padding: 0; max-height: 300px; overflow: auto; }
+.disc li { padding: 5px 0; border-bottom: 1px dotted #1d2b40; font-size: 13px; }
+.disc li b { color: var(--ink); }
+.disc li span { color: var(--muted); }
+.disc li small { display: block; color: var(--muted); font-size: 12px; margin-top: 1px; }
+.disc li small.unl { color: var(--water); }
+.disc li.got b { color: var(--good); }
+.disc li.next { opacity: 0.85; }
+
+/* Time and Build now sit under the map, where there is room for two columns */
+.mapcol .timepanel { margin-top: 10px; }
+.mapcol .buildpanel { margin-top: 12px; }
+.mapcol .cards { grid-template-columns: 1fr 1fr; }
+@media (max-width: 560px) { .mapcol .cards { grid-template-columns: 1fr; } }

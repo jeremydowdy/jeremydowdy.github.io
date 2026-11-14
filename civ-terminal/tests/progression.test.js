@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as game from '../js/game.js';
 import { isValidSave } from '../js/state.js';
-import { forecast } from '../js/economy.js';
+import { forecast, ledger } from '../js/economy.js';
 import { loadData } from './helpers.js';
 
 const data = loadData();
@@ -31,7 +31,9 @@ test('reaching 15 knowledge unlocks shelters and drying racks, once, with a mess
   const out = game.advance(s, data, 1);
   assert.ok(s.discovered.includes('crafts'));
   assert.equal(out.lines.filter((l) => l.kind === 'discovery' && /Hide and pole work/.test(l.text)).length, 1);
-  assert.deepEqual(game.availableStructures(s, data).map((x) => x.id).sort(), ['campfire', 'drying-rack', 'shelter']);
+  const have = game.availableStructures(s, data).map((x) => x.id);
+  for (const id of ['campfire', 'shelter', 'drying-rack', 'fish-trap', 'woodcutters-camp', 'hunting-camp']) assert.ok(have.includes(id), `${id} should be available at 15 knowledge`);
+  for (const id of ['healers-hut', 'story-circle', 'dugout-canoe']) assert.ok(!have.includes(id), `${id} needs more knowledge`);
   assert.ok(game.build(s, data, 'shelter').ok);
   game.advance(s, data, 1);
   assert.equal(s.history.filter((h) => h.kind === 'discovery' && /Hide and pole/.test(h.text)).length, 1);
@@ -85,13 +87,20 @@ test('fires spread knowledge: more fires, faster learning', () => {
   assert.ok(run(3) > run(1) && run(1) > run(0));
 });
 
-test('next goal points at the next discovery, then the end of the era', () => {
+test('next goal points at the next discovery, then the end of the era, and then says the era is done', () => {
   const s = fresh();
-  assert.deepEqual(game.nextGoal(s, data), { at: 8, label: 'Cooking', kind: 'discovery' });
-  s.discovered.push('cooking');
-  assert.equal(game.nextGoal(s, data).at, 15);
-  s.discovered.push('crafts');
-  assert.deepEqual(game.nextGoal(s, data), { at: 60, label: 'end of the Stone Age', kind: 'era' });
+  const sorted = data.discoveries.filter((d) => d.era === 'stone').sort((a, b) => a.at.knowledge - b.at.knowledge);
+  assert.deepEqual(game.nextGoal(s, data), { at: 4, label: 'Fishing', kind: 'discovery' });
+  for (let i = 0; i < sorted.length - 1; i++) {
+    s.discovered.push(sorted[i].id);
+    const next = sorted[i + 1];
+    assert.deepEqual(game.nextGoal(s, data), { at: next.at.knowledge, label: next.name, kind: 'discovery' });
+  }
+  s.discovered.push(sorted[sorted.length - 1].id);
+  const end = data.eras[0].advanceAt.knowledge;
+  assert.deepEqual(game.nextGoal(s, data), { at: end, label: 'end of the Stone Age', kind: 'era' });
+  s.flags.eraReady = true;
+  assert.deepEqual(game.nextGoal(s, data), { at: end, label: 'Stone Age', kind: 'done' });
 });
 
 test('an expedition costs food and people now, and comes home with knowledge', () => {
@@ -192,8 +201,10 @@ test('a full early-game play-through reaches cooking, crafts and the end of the 
 
 test('the per-turn forecast matches what actually happens when the weather is average', () => {
   const s = rich(fresh('fc'));
-  s.rules.weatherSwing = 0; s.rules.spoilage = 0; s.structures.campfire = 2; s.food = 60; s.knowledge = 5; s.energy = 20;
-  s.pop = 16;                                       // at the shelter cap, so nobody is born mid-turn
+  Object.assign(s.rules, { weatherSwing: 0, spoilage: 0, deathRate: 0, childDeathRate: 0, infantDeathRate: 0, miscarriageRate: 0, conceiveChance: 0 });
+  s.pregnancies = []; s.resting = [];
+  s.structures.campfire = 2; s.structures['fish-trap'] = 2; s.structures['woodcutters-camp'] = 1;
+  s.food = 60; s.knowledge = 5; s.energy = 20;
   const f = forecast(s, data);
   const before = { food: s.food, energy: s.energy, knowledge: s.knowledge };
   game.advance(s, data, 1);
@@ -213,4 +224,38 @@ test('after a few turns the band is nudged to send an expedition, once', () => {
   const more = [];
   while (t.turn < 8 && !t.dilemma) more.push(...game.advance(t, data, 1).lines);
   assert.equal(more.filter((l) => /beyond the hills/.test(l.text)).length, 0);
+});
+
+test('the ledger lists where food and wood come from, adds up to the forecast, and follows the season', () => {
+  const s = fresh('led'); s.structures['fish-trap'] = 3; s.structures['hunting-camp'] = 2; s.structures['woodcutters-camp'] = 1; s.structures.campfire = 2;
+  s.discovered.push('cooking'); s.rules.weatherSwing = 0;
+  const L = ledger(s, data);
+  const labels = L.food.in.map((x) => x.label);
+  assert.ok(labels.includes('Gathering') && labels.some((l) => /Fish trap/.test(l)) && labels.some((l) => /Hunting camp/.test(l)) && labels.some((l) => /Cooking/.test(l)));
+  assert.ok(L.food.out.some((x) => x.label === 'Adults eat' && x.amount === -10));
+  assert.ok(Math.abs(L.food.net - forecast(s, data).food) < 1e-9);
+  assert.ok(L.energy.in.some((x) => x.label === 'Gathering wood') && L.energy.in.some((x) => /Woodcutters/.test(x.label)));
+  const fish = (step) => { s.clock.step = step; return ledger(s, data).food.in.find((x) => /Fish trap/.test(x.label)).amount; };
+  const hunt = (step) => { s.clock.step = step; return ledger(s, data).food.in.find((x) => /Hunting camp/.test(x.label)).amount; };
+  assert.ok(fish(1) > fish(0) && fish(0) > fish(3), 'fish run in summer and spring, not winter');
+  assert.ok(hunt(2) > hunt(3) && hunt(3) > hunt(1), 'game is best in autumn');
+});
+
+test('several of the same food source give less each time, so each extra trap adds less', () => {
+  const s = fresh('dim'); s.rules.weatherSwing = 0; s.clock.step = 0;
+  const trap = (n) => { s.structures['fish-trap'] = n; return ledger(s, data).food.in.filter((x) => /Fish trap/.test(x.label)).reduce((a, b) => a + b.amount, 0); };
+  const [one, two, five, ten] = [1, 2, 5, 10].map(trap);
+  assert.ok(two < 2 * one && five < 5 * one && ten < 10 * one);
+  assert.ok(ten - five < five - two, 'each extra trap adds less');
+});
+
+test('mastering the era is reported once, and the goal then says the era is done instead of a number you have passed', () => {
+  const s = fresh('done'); s.rules.weatherSwing = 0;
+  s.knowledge = data.eras[0].advanceAt.knowledge + 5;
+  const out = game.advance(s, data, 1);
+  assert.equal(out.lines.filter((l) => l.kind === 'era').length, 1);
+  assert.match(out.lines.find((l) => l.kind === 'era').text, /mastered the Stone Age/);
+  assert.equal(game.nextGoal(s, data).kind, 'done');
+  const more = game.advance(s, data, 3);
+  assert.equal(more.lines.filter((l) => l.kind === 'era').length, 0, 'not repeated');
 });

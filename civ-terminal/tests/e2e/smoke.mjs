@@ -150,7 +150,11 @@ try {
   const w = await saved(q);
   ok(w.timeline.reduce((n, r) => n + r.born, 0) > 0 && w.kids + w.pop > 12, 'people were born and the population grew by itself');
   ok(/People: \d+ to \d+/.test(await q.getAttribute('#chart', 'aria-label')), 'the chart has a text version with the numbers');
-  ok((await q.textContent('[data-chip="pop"]')).includes('adults'), 'the population chip shows adults and kids');
+  ok(/\d+ men, \d+ women, \d+ kids/.test(await q.textContent('[data-chip="pop"]')), 'the population chip shows men, women and kids');
+  ok((await q.textContent('[data-chip="pop"]')).includes('pregnant'), '... and how many women are pregnant');
+  const ledgerText = await q.textContent('#ledger');
+  ok(/Gathering/.test(ledgerText) && /Adults eat/.test(ledgerText) && /Net food/.test(ledgerText) && /Net wood/.test(ledgerText), 'the Food & wood panel shows where food and wood come from and go');
+  ok((await q.textContent('#discList')).includes('Fishing') && (await q.textContent('#discList')).includes('Fish trap'), 'the discoveries list shows what is coming and what it unlocks');
   ok((await q.textContent('[data-chip="food"]')).includes('foraging'), 'the food chip shows how this season forages');
   await q.keyboard.press('`'); await q.keyboard.type('set speed instant'); await q.keyboard.press('Enter');
   for (const c of ['set rule foragePerPerson 0.2', 'set rule hungerUnrest 30', 'wait 12']) { await q.keyboard.type(c); await q.keyboard.press('Enter'); await q.waitForTimeout(100); }
@@ -163,6 +167,31 @@ try {
   await q.reload(); await q.keyboard.press('Space'); await q.waitForFunction(() => !document.getElementById('in').disabled);
   await q.keyboard.type('load'); await q.keyboard.press('Enter'); await q.waitForSelector('#game:not([hidden])');
   ok(/year \d+/.test(await q.textContent('.hud-sub')), 'a save from the previous build loads and gets a calendar');
+
+  console.log('The River Clan, mushrooms, and the end of the Stone Age');
+  const g = await open();
+  await begin(g, 'Gamble');
+  const inv = '[data-key="invite"]';
+  eq(await g.getAttribute(inv, 'aria-disabled'), 'true', 'the invitation is not ready on the first turn');
+  ok((await g.textContent(inv)).includes('Ready in'), '... and says how long to wait');
+  const setSave = async (patch) => {
+    const cur = await saved(g);
+    await g.evaluate((x) => localStorage.setItem('civ-terminal:save:v1', JSON.stringify(x)), { ...cur, ...patch(cur) });
+    await g.reload(); await g.keyboard.press('Space'); await g.waitForFunction(() => !document.getElementById('in').disabled);
+    await g.keyboard.type('load'); await g.keyboard.press('Enter'); await g.waitForSelector('#game:not([hidden])');
+  };
+  await setSave((c) => ({ turn: 12, food: 80, cooldowns: { invite: 5, prompted: true } }));
+  eq(await g.getAttribute(inv, 'aria-disabled'), 'false', 'a few turns later it is ready');
+  await g.click(inv);
+  ok((await g.textContent('#log')).includes('You invited the River Clan'), 'inviting them is logged, whatever they do');
+  eq(await g.getAttribute(inv, 'aria-disabled'), 'true', '... and then they need time before the next visit');
+  await setSave(() => ({ knowledge: 15, dilemma: { type: 'event', id: 'mushrooms', turn: 12 }, flags: { mushroomsKnown: true } }));
+  ok(await g.isVisible('#modal') && (await g.textContent('#mTitle')) === 'The mushrooms', 'the mushroom decision appears');
+  ok((await g.textContent('#decision')).includes('The outcome is random'), '... and says the outcome is random');
+  await g.keyboard.press('a');
+  ok(await g.isHidden('#modal') && (await g.textContent('#log')).includes('Have one volunteer'), 'choosing resolves it and logs what happened');
+  await setSave(() => ({ knowledge: 160, flags: { eraReady: true } }));
+  ok((await g.textContent('#goal')).includes('You have mastered the Stone Age'), 'at the end of the Stone Age the goal says so, instead of a number you have passed');
 
   console.log('Small screens and reduced motion');
   const phone = await open({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });

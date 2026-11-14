@@ -1,0 +1,168 @@
+{
+  "invite": {
+    "name": "Invite the River Clan",
+    "cooldown": 5,
+    "firstReadyTurn": 5,
+    "cost": {
+      "food": 6
+    },
+    "text": "Send word, and a gift of food, inviting the River Clan to sit at your fire and trade what they know. You never know how they will take it. How well they trust you, and whether your spears are stacked, change the odds.",
+    "outcomes": [
+      {
+        "id": "share",
+        "weight": 38,
+        "trust": 22,
+        "text": "They sit at your fire and teach what they know. Their stories and tricks spread through the camp.",
+        "effects": {
+          "knowledge": 4,
+          "trust": 8
+        }
+      },
+      {
+        "id": "trade",
+        "weight": 26,
+        "trust": 10,
+        "text": "A friendly feast. They leave gifts of dried fish and smoked meat.",
+        "effects": {
+          "food": 9,
+          "trust": 5
+        }
+      },
+      {
+        "id": "mushrooms",
+        "weight": 14,
+        "trust": 8,
+        "requires": {
+          "knowledge": 10,
+          "notFlag": "mushroomsKnown"
+        },
+        "text": "\"Look what we found.\" They bring mushrooms that make people see things, and seem to sharpen the mind. They can't tell you which kinds are safe.",
+        "effects": {
+          "knowledge": 1,
+          "trust": 6
+        },
+        "flags": [
+          "mushroomsKnown"
+        ],
+        "then": "mushrooms"
+      },
+      {
+        "id": "demand",
+        "weight": 10,
+        "trust": -8,
+        "text": "They eat well, then demand more food to leave in peace.",
+        "effects": {
+          "food": -8,
+          "trust": -3
+        }
+      },
+      {
+        "id": "attack",
+        "weight": 12,
+        "trust": -30,
+        "arms": -5,
+        "text": "A misunderstanding, or a trap. Spears come out. Your people are hurt, and food is taken.",
+        "effects": {
+          "food": -10,
+          "pop": -2,
+          "stability": -8,
+          "trust": -12
+        },
+        "raid": true
+      }
+    ]
+  },
+  "mushrooms": {
+    "title": "The mushrooms",
+    "text": "The River Clan's mushrooms make people see things, and the ones who ate them seem to think more clearly for days. But the clan can't tell you which kinds are safe. Some sicken people. Some kill. You have to decide how to find out.",
+    "options": {
+      "A": {
+        "label": "Have one volunteer taste a little",
+        "upside": "If it goes well, new ideas for the band, and you learn something about which ones are safe.",
+        "cost": "The volunteer might be made sick, or killed.",
+        "outcomes": [
+          {
+            "id": "visions",
+            "weight": 45,
+            "perFlag": {
+              "mushroomTests": 7
+            },
+            "text": "The volunteer sees wonders, and wakes with ideas.",
+            "effects": {
+              "knowledge": 3,
+              "stability": 3
+            },
+            "setFlags": {
+              "mushroomTests": "+1"
+            }
+          },
+          {
+            "id": "sick",
+            "weight": 30,
+            "text": "The volunteer is sick for days. Nobody wants to try again soon.",
+            "effects": {
+              "food": -2,
+              "stability": -2
+            }
+          },
+          {
+            "id": "poison",
+            "weight": 25,
+            "perFlag": {
+              "mushroomTests": -5
+            },
+            "text": "The wrong mushroom. The volunteer does not wake up.",
+            "effects": {
+              "pop": -1,
+              "stability": -6
+            }
+          }
+        ]
+      },
+      "B": {
+        "label": "Hold a feast so everyone shares the visions",
+        "upside": "A burst of insight for the whole band, if it goes well.",
+        "cost": "Everyone is at risk. A bad batch could kill several.",
+        "outcomes": [
+          {
+            "id": "great",
+            "weight": 35,
+            "perFlag": {
+              "mushroomTests": 6
+            },
+            "text": "A night nobody forgets. By morning the band is full of new ideas and stories.",
+            "effects": {
+              "knowledge": 9,
+              "stability": 6
+            },
+            "setFlags": {
+              "mushroomTests": "+1"
+            }
+          },
+          {
+            "id": "sickness",
+            "weight": 35,
+            "text": "Half the camp spends days sick, and an old one never recovers.",
+            "effects": {
+              "food": -6,
+              "stability": -8,
+              "pop": -1
+            }
+          },
+          {
+            "id": "poison",
+            "weight": 30,
+            "perFlag": {
+              "mushroomTests": -6
+            },
+            "text": "The wrong mushrooms. Several people die before dawn.",
+            "effects": {
+              "pop": -4,
+              "stability": -14
+            }
+          }
+        ]
+      }
+    }
+  }
+}

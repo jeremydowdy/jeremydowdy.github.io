@@ -4,27 +4,143 @@
     "name": "Campfire",
     "era": "stone",
     "description": "People camp around the fire and trade what they know, so knowledge spreads. Every new fire costs a little more wood.",
-    "cost": { "energy": 6 },
+    "cost": {
+      "energy": 6
+    },
     "costGrowth": 0.25,
-    "perTurn": { "knowledge": 0.5, "stability": 0.1 }
+    "perTurn": {
+      "knowledge": 0.5,
+      "stability": 0.1
+    }
+  },
+  {
+    "id": "fish-trap",
+    "name": "Fish trap",
+    "era": "stone",
+    "description": "Woven traps in the shallows. Fish run best in spring and summer, and the river only holds so many.",
+    "cost": {
+      "energy": 4
+    },
+    "costGrowth": 0.2,
+    "perTurn": {
+      "food": 2.2
+    },
+    "seasonKey": "fish",
+    "diminish": 0.8
+  },
+  {
+    "id": "woodcutters-camp",
+    "name": "Woodcutters' camp",
+    "era": "stone",
+    "description": "Stone axes and a drag path to the forest. Brings in wood faster.",
+    "cost": {
+      "energy": 6
+    },
+    "costGrowth": 0.25,
+    "perTurn": {
+      "energy": 1.6
+    },
+    "diminish": 0.85
+  },
+  {
+    "id": "hunting-camp",
+    "name": "Hunting camp",
+    "era": "stone",
+    "description": "Spear hunters bring in game. Autumn is the best season, and summer the worst.",
+    "cost": {
+      "energy": 6,
+      "food": 3
+    },
+    "costGrowth": 0.25,
+    "perTurn": {
+      "food": 2.6
+    },
+    "seasonKey": "hunt",
+    "diminish": 0.8
   },
   {
     "id": "shelter",
     "name": "Shelter",
     "era": "stone",
     "description": "Hide-and-pole huts. Room for 6 more people, and a little more calm.",
-    "cost": { "food": 8, "energy": 6 },
+    "cost": {
+      "food": 8,
+      "energy": 6
+    },
     "costGrowth": 0.15,
     "capacity": 6,
-    "perTurn": { "stability": 0.1 }
+    "perTurn": {
+      "stability": 0.1
+    }
   },
   {
     "id": "drying-rack",
     "name": "Drying rack",
     "era": "stone",
     "description": "Fish and meat dried in smoke keep through the winter, so less goes to waste.",
-    "cost": { "food": 5, "energy": 6 },
+    "cost": {
+      "food": 5,
+      "energy": 6
+    },
     "costGrowth": 0.2,
-    "perTurn": { "food": 0.7 }
+    "perTurn": {
+      "food": 0.7
+    }
+  },
+  {
+    "id": "healers-hut",
+    "name": "Healer's hut",
+    "era": "stone",
+    "description": "Herbs, set bones, and women attended in childbirth. Fewer people die and fewer pregnancies are lost.",
+    "cost": {
+      "food": 6,
+      "energy": 8
+    },
+    "costGrowth": 0.3,
+    "health": 0.15
+  },
+  {
+    "id": "story-circle",
+    "name": "Story circle",
+    "era": "stone",
+    "description": "A ring of stones where elders tell the old stories. People feel they belong, and what is learned is remembered.",
+    "cost": {
+      "food": 5,
+      "energy": 8
+    },
+    "costGrowth": 0.3,
+    "perTurn": {
+      "stability": 0.35,
+      "knowledge": 0.7
+    }
+  },
+  {
+    "id": "dugout-canoe",
+    "name": "Dugout canoe",
+    "era": "stone",
+    "description": "A hollowed log reaches deep water. Big catches in spring and summer.",
+    "cost": {
+      "energy": 12
+    },
+    "costGrowth": 0.3,
+    "perTurn": {
+      "food": 3.2
+    },
+    "seasonKey": "fish",
+    "diminish": 0.85
+  },
+  {
+    "id": "storage-pit",
+    "name": "Storage pit",
+    "era": "stone",
+    "description": "Lined pits and clay pots keep nuts, grain and dried fish from spoiling, and add to what you can store.",
+    "cost": {
+      "food": 6,
+      "energy": 8
+    },
+    "costGrowth": 0.25,
+    "perTurn": {
+      "food": 1.2
+    }
   }
 ]

@@ -1,7 +1,7 @@
 {
   "startPopulation": {
-    "value": 12,
-    "label": "People at turn 1"
+    "value": 10,
+    "label": "People at turn 1 (half of them women)"
   },
   "startFood": {
     "value": 30,
@@ -16,7 +16,7 @@
     "label": "Food foraged per person per turn, before crowding"
   },
   "landCapacity": {
-    "value": 60,
+    "value": 45,
     "label": "How many foragers the land feeds before returns thin out"
   },
   "weatherSwing": {
@@ -35,24 +35,56 @@
     "value": 20,
     "label": "People the camp holds without built shelter"
   },
-  "birthRate": {
-    "value": 0.1,
-    "label": "Births per adult per turn when well fed and not crowded"
+  "gestation": {
+    "value": 3,
+    "label": "Turns a pregnancy lasts (a turn is a season)"
+  },
+  "restTurns": {
+    "value": 0,
+    "label": "Extra turns a mother rests after giving birth before she can conceive again (0 = the next turn)"
+  },
+  "conceiveChance": {
+    "value": 0.85,
+    "label": "Chance each rested woman conceives in a turn, when well fed and not crowded"
+  },
+  "mateRatio": {
+    "value": 0.5,
+    "label": "Men needed per woman for full fertility (fewer men, fewer pregnancies)"
+  },
+  "twinChance": {
+    "value": 0.03,
+    "label": "Chance a birth is twins"
+  },
+  "miscarriageRate": {
+    "value": 0.045,
+    "label": "Chance a pregnancy is lost each turn (higher when people are hungry)"
+  },
+  "birthDeathRate": {
+    "value": 0.02,
+    "label": "Chance a mother dies giving birth"
+  },
+  "infantTurns": {
+    "value": 4,
+    "label": "Turns a baby counts as an infant (more fragile)"
+  },
+  "infantDeathRate": {
+    "value": 0.03,
+    "label": "Extra chance an infant dies each turn"
   },
   "birthFoodTurns": {
     "value": 3,
-    "label": "Turns of stored food needed for full fertility (less food, fewer births)"
+    "label": "Turns of stored food needed for full fertility (less food, fewer pregnancies)"
   },
   "crowdBirthDrop": {
     "value": 2,
-    "label": "How sharply births fall when the camp is over capacity"
+    "label": "How sharply pregnancies fall off when the camp is over capacity"
   },
   "deathRate": {
-    "value": 0.012,
+    "value": 0.01,
     "label": "Chance an adult dies each turn (illness, accidents, age)"
   },
   "childDeathRate": {
-    "value": 0.018,
+    "value": 0.012,
     "label": "Chance a child dies each turn"
   },
   "childVulnerability": {
@@ -64,7 +96,7 @@
     "label": "Food a child eats per turn (children don't forage or learn yet)"
   },
   "matureTurns": {
-    "value": 12,
+    "value": 8,
     "label": "Turns until a child grows up and starts working"
   },
   "hungerTurns": {
@@ -116,8 +148,12 @@
     "label": "Stability lost in a famine turn"
   },
   "laborEnergy": {
-    "value": 0.25,
+    "value": 0.3,
     "label": "Energy (labor and firewood) gathered per person per turn"
+  },
+  "woodCapacity": {
+    "value": 60,
+    "label": "How many people the nearby trees keep supplied before wood gets harder to find"
   },
   "knowledgePerPerson": {
     "value": 0.02,
@@ -178,5 +214,9 @@
   "treatyBreakPenalty": {
     "value": 15,
     "label": "Extra trust lost for building after pledging to disarm"
+  },
+  "startWomen": {
+    "value": 5,
+    "label": "Women at turn 1; all of them start out pregnant"
   }
 }
