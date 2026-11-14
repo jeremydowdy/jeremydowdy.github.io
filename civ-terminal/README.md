@@ -2,6 +2,14 @@
 
 A civilization sim played in a terminal, in the browser. Static files only: no backend, no accounts, no trackers, and no requests to any other site. Saves and the civilization's name stay in the player's browser.
 
+> **This game is hidden from the live site.** It stays in the repo so it can be worked on, but it is not published: `_config.yml` at the repo root lists `civ-terminal` under `exclude`, so GitHub Pages leaves it out, there is no link to it on the home page, and its build-log entries live in `dev-log.json` here instead of the public build log.
+>
+> **Work on it locally:** from the repo root run `python3 -m http.server 8765` and open <http://localhost:8765/civ-terminal/>. Tests: `cd civ-terminal && npm test` (and `node tests/e2e/smoke.mjs` for the browser test).
+>
+> **To publish it again:** (1) delete the `- civ-terminal` line from `_config.yml`; (2) add the home page entry back in `index.html`, in the Published list, e.g. `<a href="civ-terminal/" class="doc-link">&gt; launch civ_terminal</a>`; (3) optionally move the entries from `dev-log.json` back into `architecture/build-log/build-log.json` and run `python3 architecture/tools/build.py`. The last version that was published is commit `f658734`.
+>
+> Note: the repository itself is public, so the source is visible on GitHub even while the game is not on the site.
+
 **Status: vertical slice.** One era (the Stone Age) with ten structures, ten discoveries, three expeditions, two dilemma cards, a River Clan you can invite (a gamble), a mushroom event, and a rival playing tit-for-tat. The rest of the design (more eras, the other game-theory modules, simulation-hypothesis cards, CRT effects, era-transition wipes) is not built yet. The Stone Age ends at 130 knowledge; the next era isn't built, so the game says you've mastered the Stone Age and lets you keep playing for score.
 
 **How it looks:** the game starts in a terminal (pure black, one phosphor color): a boot log, then "Name your civilization". Pressing Enter opens a colorful pixel-art game screen: a small map with a blue river, forest and hills, a resource bar, and buttons for building, expeditions and decisions. The terminal is still there as a console drawer (press the backtick key).

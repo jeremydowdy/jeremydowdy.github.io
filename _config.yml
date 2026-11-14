@@ -1,0 +1,11 @@
+# Jekyll settings for GitHub Pages.
+#
+# Everything in this repo is published to the live site EXCEPT the files and
+# folders listed here. They stay in the repo (and can be run locally) but are
+# not part of the website.
+#
+# civ-terminal: the Civ Terminal game, hidden until it is ready.
+#   To publish it again, delete the "- civ-terminal" line below and add its
+#   link back to index.html (see civ-terminal/README.md).
+exclude:
+  - civ-terminal
