@@ -1,41 +1,18 @@
-# Changes: recruiter-readiness pass (home page)
+# Changes: home page refresh
 
-## What this is
-A second, reversible theme for `index.html`. The original look is preserved exactly
-(verified by pixel diff at 1280x800 and 390x844, fold and full page: zero differing pixels).
+## History
+A reversible "recruiter" theme was built and then dropped (owner didn't like it). It lives in git history:
+commits `ca723de` through `538d737`. Last commit that still has it: `538d737`.
 
-## How it works
-- `styles.original.css`: the previous inline stylesheet, moved verbatim. Drives `data-theme="original"`.
-- `styles.recruiter.css`: every rule scoped to `html[data-theme="recruiter"]`.
-- `index.html` head script sets `data-theme` on `<html>` before paint, from (in order) `?theme=`, localStorage `siteTheme`, then `DEFAULT_THEME`.
-- Content that only one theme shows is marked `orig-only` / `rec-only`.
-- **Default is `original`.** Visitors never see the recruiter theme unless you switch the default.
-- Toggle: open `/?preview=1` once (remembered in localStorage). A "Theme" button appears bottom-left; the choice is saved in localStorage. `/?preview=0` hides the button; `/?theme=recruiter` forces a theme for one view.
+## Current home page
+- Look is the original golf hero + glass cards. CSS now lives in `styles.css` (was inline).
+- Added life: glass stat strip (USMC veteran / 5 certifications / M.S. in progress, Dec 2027 / 3 live projects), entrance fade-ups, hover lifts on project and cert cards, green accent edges, tech-stack chips on each project, education timeline, GitHub button.
+- Reduced-motion support; focus rings; axe-core 0 violations.
+- Certifications: each links to its PDF in `assets/certs/` (LPI Linux Essentials, CompTIA Security+, CompTIA SecurityX, ITIL 4). Renew by overwriting the PDF with the same filename. One "View all badges on Credly" pill links to the Credly profile.
+- Meta description plus Open Graph / Twitter title and description added. No share image yet.
 
-## Go live with recruiter
-Change `var DEFAULT_THEME = 'original';` to `'recruiter'` in the head script of `index.html`.
-
-## Revert (either works)
-- One line: set `DEFAULT_THEME` back to `'original'`.
-- Or undo the whole pass: `git revert <commit-sha>` (the commit titled "Recruiter-readiness pass ...").
-
-## Recruiter theme changes
-Contact row (Email, Resume, GitHub, LinkedIn) above the fold; certification links to your Credly profile; two Education entries; hero focus line; trimmed About; a tech-stack line per project card (descriptions unchanged); dimmed golf hero (opaque overlay for AA contrast), solid dark page, solid cards, blue accent (#4db2ff to #8fe3ff gradient, Safari-style), stat strip, chip-card certifications, education timeline, floating glow and name shimmer, entrance and hover motion (disabled under reduced motion); meta description, Open Graph and Twitter tags; reduced-motion support; labelled, keyboard-accessible toggle.
-Also (both themes, no visual change): chat button `aria-label` now contains its visible text.
-Compressed hero images: `assets/hero-1600.jpg` (~154 KB) and `assets/hero-800.jpg` (~43 KB) vs the 1.39 MB original (still used by the original theme).
-
-## Checks
-- axe-core: 0 violations on both themes at desktop and mobile. Hero text contrast can't be measured by axe over an image; worst case (white photo pixel under the overlay) computes to about 4.6:1.
-- Lighthouse accessibility (recruiter): 100.
-- Toggle persists across reload; fresh visitors get original with no toggle.
-
-## Placeholders / owner decisions
-- `[EMAIL]` and `[RESUME_PATH]` (contact row)
-- Hero focus line (`[PLACEHOLDER: owner to confirm wording]`)
-- Trimmed About wording needs approval
-- Credly: all four certs link to the profile `https://www.credly.com/users/jeremy-dowdy.a7d61c62`; a single "View all badges on Credly" pill sits under the list; each cert links to its own PDF instead
-- `[OG_IMAGE_PATH]` for og:image / twitter:image
-- Cert PDFs live in `assets/certs/` (LPI Linux Essentials, Security+, SecurityX, ITIL 4). To renew, overwrite the PDF with the same filename. AWS PDF is not published yet (exam results notice contains candidate ID, registration number and score).
-- GitHub URL `https://github.com/jeremydowdy` was derived from the repo owner; confirm
-- Tech-stack lines are my reading of each project; confirm
-- The AI assistant is unchanged and still answers only from owner-provided information
+## Not done / owner items
+- AWS Certified Cloud Practitioner has no PDF link: the uploaded file is an exam results notice (candidate ID, registration number, score). Send the actual certificate or a redacted copy.
+- Email and resume links were dropped (no real values yet). Add when ready.
+- GitHub URL `https://github.com/jeremydowdy` was derived from the repo owner; confirm.
+- Share image (`og:image`) not set.
