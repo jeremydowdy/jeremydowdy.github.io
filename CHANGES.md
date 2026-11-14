@@ -20,12 +20,12 @@ Change `var DEFAULT_THEME = 'original';` to `'recruiter'` in the head script of 
 - Or undo the whole pass: `git revert <commit-sha>` (the commit titled "Recruiter-readiness pass ...").
 
 ## Recruiter theme changes
-Contact row (Email, Resume, GitHub, LinkedIn) above the fold; certification links to your Credly profile; two Education entries; hero focus line; trimmed About; a tech-stack line per project card (descriptions unchanged); dimmed golf hero (opaque overlay for AA contrast), solid dark page, solid cards, one gold accent; meta description, Open Graph and Twitter tags; reduced-motion support; labelled, keyboard-accessible toggle.
+Contact row (Email, Resume, GitHub, LinkedIn) above the fold; certification links to your Credly profile; two Education entries; hero focus line; trimmed About; a tech-stack line per project card (descriptions unchanged); dimmed golf hero (opaque overlay for AA contrast), solid dark page, solid cards, one blue accent (#4db2ff, Safari-style); meta description, Open Graph and Twitter tags; reduced-motion support; labelled, keyboard-accessible toggle.
 Also (both themes, no visual change): chat button `aria-label` now contains its visible text.
 Compressed hero images: `assets/hero-1600.jpg` (~154 KB) and `assets/hero-800.jpg` (~43 KB) vs the 1.39 MB original (still used by the original theme).
 
 ## Checks
-- axe-core: 0 violations on both themes at desktop and mobile. Hero text contrast can't be measured by axe over an image; worst case (white photo pixel under the overlay) computes to >= 4.7:1.
+- axe-core: 0 violations on both themes at desktop and mobile. Hero text contrast can't be measured by axe over an image; worst case (white photo pixel under the overlay) computes to about 4.6:1.
 - Lighthouse accessibility (recruiter): 100.
 - Toggle persists across reload; fresh visitors get original with no toggle.
 
