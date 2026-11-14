@@ -111,9 +111,57 @@ html[data-theme="recruiter"] .cert-link:hover { background: var(--gold); color: 
 html[data-theme="recruiter"] h3 { color: var(--accent2); font-size: 1.05em; letter-spacing: .08em; text-transform: uppercase; }
 @keyframes recRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
+/* ---- Life pass 2: bigger hero, stat strip, chip grids, timeline ---- */
+html[data-theme="recruiter"] header { padding: 56px 20px 0; overflow: hidden; }
+html[data-theme="recruiter"] header::before, html[data-theme="recruiter"] header::after {
+    content: ""; position: absolute; border-radius: 50%; pointer-events: none; filter: blur(60px); opacity: .5;
+}
+html[data-theme="recruiter"] header::before { width: 340px; height: 340px; left: -80px; top: -120px; background: #1b7fe0; animation: recFloat 14s ease-in-out infinite alternate; }
+html[data-theme="recruiter"] header::after { width: 300px; height: 300px; right: -60px; bottom: -40px; background: #3fd0ff; opacity: .32; animation: recFloat 18s ease-in-out infinite alternate-reverse; }
+html[data-theme="recruiter"] header > * { position: relative; z-index: 1; }
+html[data-theme="recruiter"] header h1 {
+    font-size: 3.6em; background-size: 200% 100%;
+    background-image: linear-gradient(90deg, #ffffff 0%, #8fe3ff 40%, #ffffff 80%);
+    animation: recShimmer 9s linear infinite;
+}
+html[data-theme="recruiter"] ul.stat-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; list-style: none; padding: 0; margin: 34px -20px 0;
+    background: rgba(8,10,14,.72); border-top: 1px solid rgba(77,178,255,.45);
+}
+html[data-theme="recruiter"] .stat-strip li { margin: 0; padding: 16px 8px; text-align: center; border-right: 1px solid rgba(255,255,255,.1); color: #fff; }
+html[data-theme="recruiter"] .stat-strip li:last-child { border-right: 0; }
+html[data-theme="recruiter"] .stat-strip strong {
+    display: block; font-size: 1.7em; line-height: 1.1; letter-spacing: 0;
+    background: linear-gradient(90deg, #8fe3ff, #4db2ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+html[data-theme="recruiter"] .stat-strip span { font-size: .85em; color: #e6e6ea; }
+html[data-theme="recruiter"] section h2 { font-size: 1.7em; }
+/* certifications as chip cards */
+html[data-theme="recruiter"] .cert-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+html[data-theme="recruiter"] .cert-list li {
+    margin: 0; padding: 14px 16px; background: #26262e; border: 1px solid var(--line); border-left: 3px solid var(--gold); border-radius: 8px;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 8px; transition: transform .2s ease, box-shadow .2s ease;
+}
+html[data-theme="recruiter"] .cert-list li:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -14px rgba(77,178,255,.7); }
+html[data-theme="recruiter"] .cert-list li .cert-link { margin: 0 !important; }
+/* education as timeline */
+html[data-theme="recruiter"] .edu-list { list-style: none; padding: 0 0 0 22px; border-left: 2px solid rgba(77,178,255,.45); margin-left: 6px; }
+html[data-theme="recruiter"] .edu-list li { position: relative; margin-bottom: 18px; }
+html[data-theme="recruiter"] .edu-list li::before {
+    content: ""; position: absolute; left: -30px; top: 8px; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--gold); box-shadow: 0 0 0 4px rgba(77,178,255,.25);
+}
+html[data-theme="recruiter"] #projects > ul:first-of-type > li:hover { border-left-color: var(--accent2); }
+@keyframes recFloat { from { transform: translate(0,0) scale(1); } to { transform: translate(60px,40px) scale(1.2); } }
+@keyframes recShimmer { from { background-position: 0 0; } to { background-position: 200% 0; } }
+
 @media (max-width: 480px) {
-    html[data-theme="recruiter"] header h1 { font-size: 2em; }
-    html[data-theme="recruiter"] header { padding: 24px 14px; }
+    html[data-theme="recruiter"] header h1 { font-size: 2.3em; }
+    html[data-theme="recruiter"] ul.stat-strip { grid-template-columns: 1fr 1fr; margin: 24px -14px 0; }
+    html[data-theme="recruiter"] .stat-strip li:nth-child(2) { border-right: 0; }
+    html[data-theme="recruiter"] .stat-strip li:nth-child(n+3) { border-top: 1px solid rgba(255,255,255,.1); }
+    html[data-theme="recruiter"] .cert-list { grid-template-columns: 1fr; }
+    html[data-theme="recruiter"] header { padding: 28px 14px 0; }
     html[data-theme="recruiter"] .contact-row a { flex: 1 1 40%; padding: 10px 8px; }
     html[data-theme="recruiter"] section { padding: 22px 18px; margin-left: 12px; margin-right: 12px; }
 }

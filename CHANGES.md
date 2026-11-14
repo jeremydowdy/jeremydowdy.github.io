@@ -20,7 +20,7 @@ Change `var DEFAULT_THEME = 'original';` to `'recruiter'` in the head script of 
 - Or undo the whole pass: `git revert <commit-sha>` (the commit titled "Recruiter-readiness pass ...").
 
 ## Recruiter theme changes
-Contact row (Email, Resume, GitHub, LinkedIn) above the fold; certification links to your Credly profile; two Education entries; hero focus line; trimmed About; a tech-stack line per project card (descriptions unchanged); dimmed golf hero (opaque overlay for AA contrast), solid dark page, solid cards, blue accent (#4db2ff to #8fe3ff gradient, Safari-style), subtle entrance and hover motion (disabled under reduced motion); meta description, Open Graph and Twitter tags; reduced-motion support; labelled, keyboard-accessible toggle.
+Contact row (Email, Resume, GitHub, LinkedIn) above the fold; certification links to your Credly profile; two Education entries; hero focus line; trimmed About; a tech-stack line per project card (descriptions unchanged); dimmed golf hero (opaque overlay for AA contrast), solid dark page, solid cards, blue accent (#4db2ff to #8fe3ff gradient, Safari-style), stat strip, chip-card certifications, education timeline, floating glow and name shimmer, entrance and hover motion (disabled under reduced motion); meta description, Open Graph and Twitter tags; reduced-motion support; labelled, keyboard-accessible toggle.
 Also (both themes, no visual change): chat button `aria-label` now contains its visible text.
 Compressed hero images: `assets/hero-1600.jpg` (~154 KB) and `assets/hero-800.jpg` (~43 KB) vs the 1.39 MB original (still used by the original theme).
 
