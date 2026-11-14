@@ -35,7 +35,7 @@ Compressed hero images: `assets/hero-1600.jpg` (~154 KB) and `assets/hero-800.jp
 - Trimmed About wording needs approval
 - Credly: all four certs link to the profile `https://www.credly.com/users/jeremy-dowdy.a7d61c62`; each has a TODO for its own badge URL
 - `[OG_IMAGE_PATH]` for og:image / twitter:image
-- LPI Linux Foundations: added with your verify link
+- Cert PDFs live in `assets/certs/` (LPI Linux Essentials, Security+, SecurityX, ITIL 4). To renew, overwrite the PDF with the same filename. AWS PDF is not published yet (exam results notice contains candidate ID, registration number and score).
 - GitHub URL `https://github.com/jeremydowdy` was derived from the repo owner; confirm
 - Tech-stack lines are my reading of each project; confirm
 - The AI assistant is unchanged and still answers only from owner-provided information
