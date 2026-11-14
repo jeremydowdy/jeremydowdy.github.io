@@ -1,0 +1,69 @@
+/* Recruiter theme. Every rule is scoped to html[data-theme="recruiter"];
+   the original look lives untouched in styles.original.css. */
+html[data-theme="recruiter"] {
+    --bg: #101012; --card: #1b1b1f; --line: #34343a; --text: #ececec; --muted: #c4c4c9; --gold: #f2b45a;
+}
+html[data-theme="recruiter"] .orig-only { display: none; }
+html[data-theme="recruiter"] p.rec-only,
+html[data-theme="recruiter"] nav.rec-only { display: block; }
+html[data-theme="recruiter"] nav.rec-only { display: flex; }
+html[data-theme="recruiter"] h3.rec-only { display: block; }
+html[data-theme="recruiter"] ul.rec-only { display: block; }
+html[data-theme="recruiter"] span.rec-only,
+html[data-theme="recruiter"] a.rec-only { display: inline-block; }
+
+html[data-theme="recruiter"] body {
+    background: var(--bg); background-image: none; color: var(--text); font-weight: 400;
+}
+/* Hero: dimmed photo behind an opaque-enough overlay (white text on <= #4f4f4f worst case, >= 8:1) */
+html[data-theme="recruiter"] header {
+    position: relative; text-align: center; padding: 36px 20px 32px;
+    background: linear-gradient(rgba(12,12,14,.74), rgba(12,12,14,.74)), url('assets/hero-800.jpg') center/cover no-repeat;
+    border-bottom: 1px solid var(--line);
+}
+@media (min-width: 801px) {
+    html[data-theme="recruiter"] header {
+        background-image: linear-gradient(rgba(12,12,14,.74), rgba(12,12,14,.74)), url('assets/hero-1600.jpg');
+    }
+}
+html[data-theme="recruiter"] header h1 { font-size: 2.6em; text-shadow: none; margin-bottom: 6px; }
+html[data-theme="recruiter"] header p { color: #f0f0f0; text-shadow: none; font-size: 1.05em; margin: 4px auto; max-width: 760px; }
+html[data-theme="recruiter"] header p.focus-line { color: var(--gold); font-weight: 500; }
+html[data-theme="recruiter"] .contact-row {
+    flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px;
+}
+html[data-theme="recruiter"] .contact-row a {
+    margin: 0; padding: 10px 22px; min-height: 24px; color: #fff; background: rgba(0,0,0,.55);
+    border: 1px solid var(--gold); border-radius: 6px; font-weight: 500; backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+html[data-theme="recruiter"] .contact-row a:hover { background: var(--gold); color: #111; transform: none; box-shadow: none; }
+html[data-theme="recruiter"] a:focus-visible, html[data-theme="recruiter"] button:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+html[data-theme="recruiter"] section {
+    background: var(--card); backdrop-filter: none; -webkit-backdrop-filter: none;
+    border: 1px solid var(--line); border-radius: 10px; box-shadow: none; padding: 32px;
+}
+html[data-theme="recruiter"] section h2 { border-bottom: 2px solid var(--gold); }
+html[data-theme="recruiter"] li, html[data-theme="recruiter"] ul { color: var(--text); font-weight: 400; }
+html[data-theme="recruiter"] h3 { color: #fff; margin-top: 22px; }
+html[data-theme="recruiter"] .doc-link, html[data-theme="recruiter"] .cert-link { color: var(--gold); }
+html[data-theme="recruiter"] .doc-link:hover, html[data-theme="recruiter"] .cert-link:hover { color: #fff; }
+html[data-theme="recruiter"] .cert-link { margin-left: 10px; font-size: .9em; }
+html[data-theme="recruiter"] .tech { display: block; margin: 4px 0 2px; color: var(--muted); font-size: .9em; }
+html[data-theme="recruiter"] #projects > ul:first-of-type > li {
+    list-style: none; margin-left: -20px; padding: 16px 18px; background: #232329; border: 1px solid var(--line); border-radius: 8px;
+}
+html[data-theme="recruiter"] footer { color: #b8b8bd; }
+html[data-theme="recruiter"] .ai-credit-badge { color: #e6e6e6; }
+
+@media (max-width: 480px) {
+    html[data-theme="recruiter"] header h1 { font-size: 2em; }
+    html[data-theme="recruiter"] header { padding: 24px 14px; }
+    html[data-theme="recruiter"] .contact-row a { flex: 1 1 40%; padding: 10px 8px; }
+    html[data-theme="recruiter"] section { padding: 22px 18px; margin-left: 12px; margin-right: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html[data-theme="recruiter"] *, html[data-theme="recruiter"] *::before, html[data-theme="recruiter"] *::after {
+        animation: none !important; transition: none !important; scroll-behavior: auto !important;
+    }
+}

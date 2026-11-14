@@ -9,3 +9,4 @@
 #   link back to index.html (see civ-terminal/README.md).
 exclude:
   - civ-terminal
+  - CHANGES.md

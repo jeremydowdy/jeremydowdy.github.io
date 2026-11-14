@@ -4,365 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jeremy Dowdy | Portfolio</title>
+    <meta name="description" content="Jeremy Dowdy: IT professional, U.S. Marine Corps veteran and M.S. candidate in Product Management and Information Technology at Western Governors University.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Jeremy Dowdy | Portfolio">
+    <meta property="og:description" content="IT professional, U.S. Marine Corps veteran and M.S. candidate in Product Management and Information Technology.">
+    <meta property="og:url" content="https://jeremydowdy.com/">
+    <!-- TODO(owner): replace [OG_IMAGE_PATH] with a 1200x630 image URL -->
+    <meta property="og:image" content="[OG_IMAGE_PATH]">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Jeremy Dowdy | Portfolio">
+    <meta name="twitter:description" content="IT professional, U.S. Marine Corps veteran and M.S. candidate in Product Management and Information Technology.">
+    <meta name="twitter:image" content="[OG_IMAGE_PATH]">
+    <script>
+    /* THEME SWITCH. To revert the whole recruiter pass, keep DEFAULT_THEME = 'original'
+       (see CHANGES.md). The toggle button only appears with ?preview=1 (remembered). */
+    (function () {
+        var DEFAULT_THEME = 'original';
+        var theme = DEFAULT_THEME, q = location.search;
+        try {
+            var saved = localStorage.getItem('siteTheme');
+            if (saved === 'original' || saved === 'recruiter') theme = saved;
+            if (/[?&]preview=1/.test(q)) localStorage.setItem('sitePreview', '1');
+            if (/[?&]preview=0/.test(q)) localStorage.removeItem('sitePreview');
+        } catch (e) {}
+        var m = q.match(/[?&]theme=(original|recruiter)/);
+        if (m) theme = m[1];
+        document.documentElement.setAttribute('data-theme', theme);
+        window.__DEFAULT_THEME = DEFAULT_THEME;
+    })();
+    </script>
+    <link rel="stylesheet" href="styles.original.css">
+    <link rel="stylesheet" href="styles.recruiter.css">
     <style>
-        /* Global Styles */
-        body {
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-weight: 300; 
-            margin: 0;
-            padding: 0;
-            background-color: #121212;
-            background-image: url('Background Image.jpg');
-            background-size: cover; 
-            background-position: center; 
-            background-attachment: fixed; 
-            color: #f4f4f4; 
-            line-height: 1.7;
-        }
-
-        h1, h2, h3 {
-            font-weight: 500; 
-            color: #ffffff; 
-            margin-bottom: 15px;
-        }
-
-        header {
-            text-align: center;
-            padding: 60px 20px 40px; 
-            background: transparent; 
-        }
-
-        header h1 {
-            font-size: 3.2em;
-            margin: 0 0 5px 0;
-            letter-spacing: 1px;
-            color: #ffffff; 
-            text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); 
-        }
-
-        header p {
-            color: #e0e0e0; 
-            font-size: 1.2em;
-            margin-top: 0;
-            font-weight: 400;
-            text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.8);
-        }
-
-        header a {
-            display: inline-block;
-            margin-top: 25px;
-            padding: 12px 30px;
-            background-color: rgba(255, 255, 255, 0.15); 
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 500;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            border-radius: 30px; 
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-        }
-
-        header a:hover {
-            background-color: rgba(255, 255, 255, 0.3); 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        section {
-            max-width: 800px;
-            margin: 20px auto 40px auto;
-            padding: 45px;
-            background-color: rgba(0, 0, 0, 0.35); 
-            backdrop-filter: blur(8px); 
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); 
-        }
-
-        section h2 {
-            border-bottom: 2px solid rgba(255, 255, 255, 0.5); 
-            display: inline-block;
-            padding-bottom: 5px;
-            margin-bottom: 25px;
-            color: #ffffff;
-        }
-
-        ul {
-            list-style-type: disc; 
-            color: #ffffff; 
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 12px;
-            color: #f4f4f4; 
-            font-weight: 300;
-        }
-
-        strong {
-            font-weight: 600;
-            color: #ffffff; 
-            letter-spacing: 0.5px;
-        }
-
-        .doc-link {
-            display: inline-block;
-            margin-top: 8px;
-            color: #00ff66;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95em;
-            transition: all 0.2s ease;
-        }
-
-        .doc-link:hover {
-            color: #ffffff;
-            text-decoration: underline;
-        }
-
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.8em;
-            margin-top: 20px;
-            font-weight: 400;
-            letter-spacing: 1px;
-        }
-        
-        .footer-tech {
-            margin-top: 10px;
-            color: #ffffff;
-            opacity: 0.8;
-        }
-
-        .ai-credit-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 18px;
-            padding: 8px 18px;
-            background-color: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            color: rgba(255, 255, 255, 0.75);
-            text-decoration: none;
-            font-size: 0.85em;
-            letter-spacing: 0.5px;
-            transition: all 0.2s ease;
-        }
-
-        .ai-credit-badge:hover {
-            background-color: rgba(255, 255, 255, 0.18);
-            color: #ffffff;
-        }
-
-        .ai-credit-icon {
-            /* Claude's coral. Light enough to stay readable on the dark background. */
-            color: #d97757;
-            font-size: 1.45em;
-            line-height: 1;
-            text-shadow: 0 0 8px rgba(217, 119, 87, 0.55);
-        }
-
-        .ai-credit-badge:hover .ai-credit-icon { color: #f0916f; }
-
-        .chat-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 350px;
-            height: 450px;
-            background-color: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            z-index: 1000;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        
-        .chat-container.closed {
-            height: 50px;
-            width: 260px;
-        }
-
-        /* Hide the body of the collapsed chat so it can't be tabbed into */
-        .chat-container.closed .chat-messages,
-        .chat-container.closed .chat-input-area {
-            visibility: hidden;
-        }
-
-        @media (max-width: 480px) {
-            .chat-container {
-                right: 16px;
-                bottom: 16px;
-                width: calc(100vw - 32px);
-                height: min(450px, 70vh);
-            }
-            section {
-                padding: 28px 22px;
-                margin-left: 16px;
-                margin-right: 16px;
-            }
-            header h1 {
-                font-size: 2.4em;
-            }
-        }
-        
-        .chat-header {
-            width: 100%;
-            background-color: rgba(255, 255, 255, 0.08);
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            border: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            text-align: left;
-            font-family: inherit;
-        }
-
-        .chat-header:focus-visible {
-            outline: 2px solid #00ff66;
-            outline-offset: -2px;
-        }
-        
-        .chat-status-dot {
-            display: block;
-            width: 8px;
-            height: 8px;
-            background-color: #00ff66;
-            border-radius: 50%;
-            margin-right: 10px;
-            box-shadow: 0 0 8px #00ff66;
-            flex-shrink: 0;
-        }
-        
-        .chat-header .chat-title {
-            display: block;
-            margin: 0;
-            font-size: 0.95em;
-            font-weight: 500;
-            color: #ffffff;
-            flex-grow: 1;
-        }
-        
-        .chat-toggle-icon {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.8em;
-            transition: transform 0.3s ease;
-        }
-        
-        .chat-container.closed .chat-toggle-icon {
-            transform: rotate(180deg);
-        }
-        
-        .chat-messages {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        .message {
-            max-width: 80%;
-            padding: 10px 14px;
-            border-radius: 12px;
-            font-size: 0.9em;
-            line-height: 1.4;
-        }
-        
-        .ai-message {
-            background-color: #333333;
-            color: #ffffff;
-            align-self: flex-start;
-            border-top-left-radius: 2px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        
-        .user-message {
-            background-color: #007aff;
-            color: #ffffff;
-            align-self: flex-end;
-            border-top-right-radius: 2px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        }
-        
-        .chat-input-area {
-            padding: 15px;
-            display: flex;
-            gap: 8px;
-            background-color: rgba(0, 0, 0, 0.2);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .chat-input-area input {
-            flex-grow: 1;
-            background-color: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 14px;
-            border-radius: 20px;
-            color: #ffffff;
-            font-size: 0.9em;
-            outline: none;
-            transition: border-color 0.2s ease;
-        }
-
-        .chat-input-area input:focus {
-            border-color: rgba(255, 255, 255, 0.6);
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
-        }
-        
-        .chat-input-area button {
-            background-color: #ffffff;
-            color: #000000;
-            border: none;
-            padding: 0 16px;
-            border-radius: 20px;
-            font-weight: 500;
-            font-size: 0.85em;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .chat-input-area button:hover,
-        .chat-input-area button:focus-visible {
-            background-color: #e0e0e0;
-            outline: none;
-        }
-
-        /* Typing indicator (three bouncing dots) */
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 2px;
-        }
-
-        .typing-dot {
-            width: 6px;
-            height: 6px;
-            background-color: rgba(255, 255, 255, 0.7);
-            border-radius: 50%;
-            animation: typingBounce 1.3s infinite ease-in-out;
-        }
-
-        .typing-dot:nth-child(2) { animation-delay: 0.15s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.3s; }
-
-        @keyframes typingBounce {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-5px); opacity: 1; }
-        }
+        .rec-only { display: none; }
+        .theme-toggle { display: none; position: fixed; left: 16px; bottom: 16px; z-index: 50;
+            padding: 10px 16px; font: 500 14px/1 "Helvetica Neue", Helvetica, Arial, sans-serif;
+            color: #fff; background: #222; border: 1px solid #888; border-radius: 24px; cursor: pointer; }
+        .theme-toggle.show { display: inline-block; }
+        .theme-toggle:focus-visible { outline: 3px solid #f2b45a; outline-offset: 2px; }
     </style>
 </head>
 <body>
@@ -370,13 +49,24 @@
     <header>
         <h1>Jeremy Dowdy</h1>
         <p>M.S. Candidate, Western Governors University | Product Management, Information Technology</p>
-        <a href="https://www.linkedin.com/in/jeremydowdy" target="_blank" rel="noopener noreferrer">View My LinkedIn</a>
+        <a class="orig-only" href="https://www.linkedin.com/in/jeremydowdy" target="_blank" rel="noopener noreferrer">View My LinkedIn</a>
+        <!-- Recruiter theme only -->
+        <p class="rec-only focus-line">[PLACEHOLDER: owner to confirm wording] IT and product management professional, U.S. Marine Corps veteran, building clear, defensible systems.</p>
+        <nav class="rec-only contact-row" aria-label="Contact">
+            <!-- TODO(owner): replace [EMAIL] and [RESUME_PATH]; GitHub URL derived from the repo owner, please confirm -->
+            <a href="mailto:[EMAIL]">Email</a>
+            <a href="[RESUME_PATH]" target="_blank" rel="noopener noreferrer">Resume</a>
+            <a href="https://github.com/jeremydowdy" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://www.linkedin.com/in/jeremydowdy" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </nav>
     </header>
 
     <main>
         <section id="about">
             <h2>About Me</h2>
-            <p>I'm an Information Technology professional and a United States Marine Corps veteran, currently completing an M.S. in Product Management and Information Technology at Western Governors University. My foundation was built in high-pressure, zero-fail operational environments, and I bring that same discipline to how I approach systems: clear architecture, deliberate tradeoffs, and decisions that can be explained and defended — not just shipped. This site itself is built and documented in that spirit; see the engineering case study below for the full technical breakdown.</p>
+            <p class="orig-only">I'm an Information Technology professional and a United States Marine Corps veteran, currently completing an M.S. in Product Management and Information Technology at Western Governors University. My foundation was built in high-pressure, zero-fail operational environments, and I bring that same discipline to how I approach systems: clear architecture, deliberate tradeoffs, and decisions that can be explained and defended — not just shipped. This site itself is built and documented in that spirit; see the engineering case study below for the full technical breakdown.</p>
+            <!-- TODO(owner): trimmed About for the recruiter theme needs your approval -->
+            <p class="rec-only">IT professional and U.S. Marine Corps veteran completing an M.S. in Product Management and Information Technology at Western Governors University. I came up in high-pressure, zero-fail operational environments and bring that discipline to systems work: clear architecture, deliberate tradeoffs, and decisions that can be explained and defended. This site is built and documented that way; the engineering case study below has the full breakdown.</p>
         </section>
 
         <section id="projects">
@@ -385,10 +75,12 @@
             <p><strong>Published:</strong></p>
             <ul>
                 <li>Engineering Case Study — a technical report covering the site's static production architecture, why the embedded AI assistant is deliberately not connected to a live LLM (free usage invites abuse, and I don't want to pay for it, so it answers only from information I gave it, about me, instead of the open web), the risk analysis behind that decision, and a postmortem on a keyword-matching bug in the assistant.
+                    <span class="rec-only tech">Tech: technical writing &bull; GitHub Pages &bull; JavaScript</span>
                     <br>
                     <a href="Case%20Study%20jeremydowdy.com.pdf" target="_blank" rel="noopener" class="doc-link">📄 View Technical Build Case Study (PDF)</a>
                 </li>
                 <li>Python Playground — learn Python basics right in the browser: five guided lessons with a code editor, instant answer checks and hints, plus a beginner cheat sheet. Python runs entirely client-side with Pyodide (WebAssembly), so there's nothing to install and no server.
+                    <span class="rec-only tech">Tech: Python &bull; Pyodide (WebAssembly) &bull; CodeMirror 6 &bull; Web Workers</span>
                     <br>
                     <a href="python-playground/" class="doc-link">🐍 Try the Python Playground</a>
                     <br>
@@ -397,6 +89,7 @@
                     <a href="architecture/" class="doc-link">🧭 Architecture &amp; Build Log</a>
                 </li>
                 <li>DIY Electrolyte Calculator — I'm big into cycling, so I built a calculator for homemade electrolytes: pick a strength and a bag of sugar, and it gives the batch recipe plus how much to scoop into each bottle.
+                    <span class="rec-only tech">Tech: HTML &bull; CSS &bull; JavaScript</span>
                     <br>
                     <a href="electrolyte-calculator/" class="doc-link">🚴 Open the Electrolyte Calculator</a>
                 </li>
@@ -417,12 +110,17 @@
                 <li><strong>AI-Augmented Engineering:</strong> Using AI tools deliberately to accelerate development — and knowing when restraint, not automation, is the right engineering call. This mindset is documented directly in the case study above.</li>
                 <li><strong>Strategic Focus:</strong> Specializing in complex IT architecture and driving end-to-end product lifecycles, from initial system design through iterative refinement and documented decision-making.</li>
             </ul>
+            <h3 class="rec-only">Education</h3>
+            <ul class="rec-only">
+                <li><strong>M.S. Product Management and Information Technology</strong> (combined B.S./M.S.), Western Governors University. In progress, anticipated December 2027.</li>
+                <li><strong>A.S. General Studies</strong>, Chattahoochee Valley Community College, December 2017.</li>
+            </ul>
             <h3>Certifications</h3>
             <ul>
-                <li><strong>AWS Certified Cloud Practitioner</strong> (CCP)</li>
-                <li><strong>CompTIA SecurityX</strong></li>
-                <li><strong>CompTIA Security+</strong></li>
-                <li><strong>ITIL 4 Foundations</strong></li>
+                <li><strong>AWS Certified Cloud Practitioner</strong> (CCP)<a class="rec-only cert-link" href="https://www.credly.com/users/jeremy-dowdy.a7d61c62" target="_blank" rel="noopener noreferrer" aria-label="Verify on Credly: AWS Certified Cloud Practitioner (opens in a new tab)"><!-- TODO(owner): link to the individual Credly badge URL -->Verify on Credly</a></li>
+                <li><strong>CompTIA SecurityX</strong><a class="rec-only cert-link" href="https://www.credly.com/users/jeremy-dowdy.a7d61c62" target="_blank" rel="noopener noreferrer" aria-label="Verify on Credly: CompTIA SecurityX (opens in a new tab)"><!-- TODO(owner): link to the individual Credly badge URL -->Verify on Credly</a></li>
+                <li><strong>CompTIA Security+</strong><a class="rec-only cert-link" href="https://www.credly.com/users/jeremy-dowdy.a7d61c62" target="_blank" rel="noopener noreferrer" aria-label="Verify on Credly: CompTIA Security+ (opens in a new tab)"><!-- TODO(owner): link to the individual Credly badge URL -->Verify on Credly</a></li>
+                <li><strong>ITIL 4 Foundations</strong><a class="rec-only cert-link" href="https://www.credly.com/users/jeremy-dowdy.a7d61c62" target="_blank" rel="noopener noreferrer" aria-label="Verify on Credly: ITIL 4 Foundations (opens in a new tab)"><!-- TODO(owner): link to the individual Credly badge URL -->Verify on Credly</a></li>
             </ul>
         </section>
     </main>
@@ -437,8 +135,31 @@
         </a>
     </footer>
 
+    <button type="button" class="theme-toggle" id="themeToggle" aria-label="Switch site theme" aria-pressed="false"></button>
+    <script>
+    (function () {
+        var btn = document.getElementById('themeToggle'), root = document.documentElement;
+        var show = false; try { show = localStorage.getItem('sitePreview') === '1'; } catch (e) {}
+        if (!show) return;
+        btn.classList.add('show');
+        function paint() {
+            var rec = root.getAttribute('data-theme') === 'recruiter';
+            btn.textContent = rec ? 'Theme: Recruiter' : 'Theme: Original';
+            btn.setAttribute('aria-pressed', rec ? 'true' : 'false');
+            btn.setAttribute('aria-label', 'Switch site theme. Current theme: ' + (rec ? 'recruiter' : 'original'));
+        }
+        btn.addEventListener('click', function () {
+            var next = root.getAttribute('data-theme') === 'recruiter' ? 'original' : 'recruiter';
+            root.setAttribute('data-theme', next);
+            try { localStorage.setItem('siteTheme', next); } catch (e) {}
+            paint();
+        });
+        paint();
+    })();
+    </script>
+
     <div class="chat-container closed" id="chatContainer">
-        <button class="chat-header" onclick="toggleChat()" aria-expanded="false" aria-label="Toggle AI Assistant Chat">
+        <button class="chat-header" onclick="toggleChat()" aria-expanded="false" aria-label="Jeremy's AI Assistant, toggle chat">
             <span class="chat-status-dot"></span>
             <span class="chat-title">Jeremy's AI Assistant</span>
             <span class="chat-toggle-icon" id="chatToggleIcon">▲</span>
