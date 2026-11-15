@@ -364,6 +364,7 @@ header p { animation: riseIn 0.7s ease 0.1s both; }
 section { animation: riseIn 0.7s ease both; }
 section:nth-of-type(2) { animation-delay: 0.08s; }
 section:nth-of-type(3) { animation-delay: 0.16s; }
+section:nth-of-type(4) { animation-delay: 0.24s; }
 section h2 { border-bottom-color: #00ff66; }
 #projects > ul:first-of-type > li {
     list-style: none; margin-left: -20px; padding: 16px 18px; background: rgba(255, 255, 255, 0.06);
