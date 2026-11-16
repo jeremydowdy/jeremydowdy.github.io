@@ -6,7 +6,7 @@ A sleek, minimal, and fully customized professional hub engineered from the grou
 Welcome to the source code for my professional portfolio. This project serves as a live demonstration of my capability to bridge the gap between technical infrastructure, disciplined execution, and user-centric design.
 
 ## How This Was Built
-I love tech, and I built this site. I came up with the projects, and I make the calls on what gets built, how it looks, and what ships. Claude (an AI assistant) does the heavy lifting on the code: I describe what I want, review the result, and send corrections until it's right. That's why Claude shows up as co-author in the commit history. I'm upfront about it: AI is a powerful tool, and I'm the one steering it.
+I love tech, and I built this site: the projects, the design, and the decisions are mine. I use Claude (an AI assistant) as a development tool to speed up the coding. I decide what to build and how it should look, review everything it produces, and send it back until it's right. That's why Claude appears as co-author in the commit history.
 
 ## Technical Architecture & Design Decisions
 * **Zero Backend Attack Surface:** Hosted statically on a decentralized CDN (GitHub Pages) to mitigate traditional server-side vulnerabilities (SQLi, Directory Traversal, RCE). 
